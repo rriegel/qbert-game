@@ -30,18 +30,16 @@ export class GameScene extends Phaser.Scene {
     
     // Add click interaction for testing
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-      // Convert screen coords to grid
       const x = pointer.x;
       const y = pointer.y;
       
-      // Find clicked cube (simple hit test)
-      for (let row = 0; row < this.pyramid.cubes.length; row++) {
-        for (let col = 0; col <= row; col++) {
+      // Iterate bottom-to-top so visually-topmost cubes are checked first
+      for (let row = this.pyramid.cubes.length - 1; row >= 0; row--) {
+        for (let col = row; col >= 0; col--) {
           const cube = this.pyramid.cubes[row][col];
           const dx = Math.abs(x - cube.screenX);
           const dy = Math.abs(y - cube.screenY);
           
-          // Simple bounding box check
           if (dx < 32 && dy < 32) {
             cube.incrementColor();
             console.log(`Clicked cube at (${row}, ${col}), colorIndex: ${cube.colorIndex}`);
