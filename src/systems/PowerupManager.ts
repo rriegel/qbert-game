@@ -74,6 +74,24 @@ export class PowerupManager {
     // Create the disk
     const disk = new Disk(this.scene, row, col);
     this.powerups.push(disk);
+    
+    // Show spawn notification
+    const text = this.scene.add.text(400, 50, 'Disk Spawned!', {
+      fontSize: '18px',
+      color: '#ff00ff',
+      fontFamily: 'monospace'
+    });
+    text.setOrigin(0.5);
+    text.setScrollFactor(0);
+    
+    this.scene.tweens.add({
+      targets: text,
+      y: 20,
+      alpha: 0,
+      duration: 2000,
+      ease: 'Power2',
+      onComplete: () => text.destroy()
+    });
   }
   
   /**
