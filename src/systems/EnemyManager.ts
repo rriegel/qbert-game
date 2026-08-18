@@ -14,7 +14,7 @@ export class EnemyManager {
   private currentLevel: number = 1;
   private onPlayerDeath: (() => void) | null = null;
   private lastCollisionTime: number = 0;
-  private collisionCooldown: number = 1000; // 1 second cooldown between collisions
+  private collisionCooldown: number = 1500; // 1 second cooldown between collisions
 
   constructor(scene: Phaser.Scene, pyramid: Pyramid) {
     this.scene = scene;
@@ -33,6 +33,13 @@ export class EnemyManager {
    */
   setOnPlayerDeath(callback: () => void): void {
     this.onPlayerDeath = callback;
+  }
+
+  /**
+   * Reset collision cooldown (called when player becomes invulnerable)
+   */
+  resetCollisionCooldown(): void {
+    this.lastCollisionTime = this.scene.time.now;
   }
 
   /**

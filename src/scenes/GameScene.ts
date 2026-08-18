@@ -150,6 +150,8 @@ export class GameScene extends Phaser.Scene {
         // Remove invulnerability after 1.5 seconds
         this.time.delayedCall(1500, () => {
           this.isInvulnerable = false;
+          // Reset collision cooldown when invulnerability ends
+          this.enemyManager.resetCollisionCooldown();
         });
       });
     }
