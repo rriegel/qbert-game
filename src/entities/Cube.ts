@@ -27,6 +27,7 @@ export class Cube {
     this.screenY = screenPos.y;
     
     this.graphics = scene.add.graphics();
+    this.graphics.setDepth(row);
     this.render();
   }
 
