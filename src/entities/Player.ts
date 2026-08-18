@@ -63,6 +63,13 @@ export class Player {
   }
 
   /**
+   * Check if a grid position is valid (on the pyramid)
+   */
+  isValidPosition(row: number, col: number): boolean {
+    return row >= 0 && row < 7 && col >= 0 && col <= row;
+  }
+
+  /**
    * Hop in the given direction with a parabolic arc animation.
    * Returns true if hop started, false if already hopping.
    */
@@ -90,6 +97,13 @@ export class Player {
         targetRow++;
         targetCol++;
         break;
+    }
+    
+    // Check if target is valid
+    if (!this.isValidPosition(targetRow, targetCol)) {
+      // Fall off the edge
+      this.fall(direction, onComplete);
+      return true;
     }
     
     // Get target screen position
@@ -129,6 +143,58 @@ export class Player {
     });
     
     return true;
+  }
+
+  /**
+   * Fall off the edge of the pyramid
+   */
+  private fall(direction: Direction, onComplete?: () => void) {
+    // Continue in the direction but fall downward
+    const fallDistance = 200;
+    const startX = this.screenX;
+    const startY = this.screenY;
+    
+    // Determine fall direction offset
+    let offsetX = 0;
+    let offsetY = fallDistance;
+    
+    switch (direction) {
+      case 'up-left':
+        offsetX = -40;
+        break;
+      case 'up-right':
+        offsetX = 40;
+        break;
+      case 'down-left':
+        offsetX = -40;
+        break;
+      case 'down-right':
+        offsetX = 40;
+        break;
+    }
+    
+    this.scene.tweens.add({
+      targets: this.graphics,
+      x: startX + offsetX,
+      y: startY + offsetY,
+      alpha: 0,
+      duration: 800,
+      ease: 'Quad.easeIn',
+      onComplete: () => {
+        this.isHopping = false;
+        onComplete?.();
+      }
+    });
+  }
+
+  /**
+   * Reset player to starting position
+   */
+  reset() {
+    this.row = 0;
+    this.col = 0;
+    this.graphics.setAlpha(1);
+    this.updatePosition();
   }
 
   /**

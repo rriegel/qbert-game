@@ -38,7 +38,15 @@ export class GameScene extends Phaser.Scene {
     if (!this.player.isHopping) {
       const direction = this.inputSystem.getDirection();
       if (direction) {
-        this.player.hop(direction);
+        this.player.hop(direction, () => {
+          // After hop completes, check if player fell off (alpha = 0)
+          if (this.player.graphics.alpha === 0) {
+            // Reset after a short delay
+            this.time.delayedCall(500, () => {
+              this.player.reset();
+            });
+          }
+        });
       }
     }
   }
