@@ -14,7 +14,9 @@ export class EnemyManager {
   private currentLevel: number = 1;
   private onPlayerDeath: (() => void) | null = null;
   private lastCollisionTime: number = 0;
-  private collisionCooldown: number = 2000; // 1 second cooldown between collisions
+  private collisionCooldown: number = 2000; // 2 second cooldown between collisions
+  private framesSinceCollision: number = 999; // Frame-based cooldown
+  private minFramesBetweenCollisions: number = 60; // At least 60 frames (1 second at 60fps)
 
   constructor(scene: Phaser.Scene, pyramid: Pyramid) {
     this.scene = scene;
@@ -40,6 +42,7 @@ export class EnemyManager {
    */
   resetCollisionCooldown(): void {
     this.lastCollisionTime = this.scene.time.now;
+    this.framesSinceCollision = 0;
   }
 
   /**
@@ -97,6 +100,7 @@ export class EnemyManager {
    */
   update(playerRow: number, playerCol: number): void {
     let collisionDetected = false;
+    this.framesSinceCollision++;
     
     // Update enemies
     for (const enemy of this.enemies) {
@@ -108,11 +112,12 @@ export class EnemyManager {
           enemy.setPlayerPosition(playerRow, playerCol);
         }
         
-        // Check collision with player (only if no collision this frame)
+        // Check collision with player (only if no collision this frame and enough frames have passed)
         if (!collisionDetected && enemy.isAtPosition(playerRow, playerCol)) {
           const now = this.scene.time.now;
-          if (now - this.lastCollisionTime > this.collisionCooldown) {
+          if (now - this.lastCollisionTime > this.collisionCooldown && this.framesSinceCollision >= this.minFramesBetweenCollisions) {
             this.lastCollisionTime = now;
+            this.framesSinceCollision = 0;
             collisionDetected = true;
             if (this.onPlayerDeath) {
               this.onPlayerDeath();
