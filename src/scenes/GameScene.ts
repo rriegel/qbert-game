@@ -12,6 +12,7 @@ export class GameScene extends Phaser.Scene {
   private scoreSystem!: ScoreSystem;
   private enemyManager!: EnemyManager;
   private isLevelTransitioning: boolean = false;
+  private isInvulnerable: boolean = false;
   private levelText!: Phaser.GameObjects.Text;
   private lives: number = 3;
   private livesText!: Phaser.GameObjects.Text;
@@ -24,6 +25,7 @@ export class GameScene extends Phaser.Scene {
     // Reset game state
     this.lives = 3;
     this.isLevelTransitioning = false;
+    this.isInvulnerable = false;
     
     // Create systems
     this.levelSystem = new LevelSystem(this);
@@ -67,8 +69,13 @@ export class GameScene extends Phaser.Scene {
       return;
     }
     
-    // Update enemies
-    this.enemyManager.update(this.player.row, this.player.col);
+    // Update enemies (only check collisions if not invulnerable)
+    if (!this.isInvulnerable) {
+      this.enemyManager.update(this.player.row, this.player.col);
+    } else {
+      // Still update enemies but skip collision detection
+      this.enemyManager.updateWithoutCollision();
+    }
     
     // Check for input and initiate hop if not already hopping
     if (!this.player.isHopping) {
@@ -114,6 +121,14 @@ export class GameScene extends Phaser.Scene {
   }
   
   private handlePlayerDeath() {
+    // Prevent multiple deaths from same collision
+    if (this.isInvulnerable) {
+      return;
+    }
+    
+    // Set invulnerability
+    this.isInvulnerable = true;
+    
     // Lose a life
     this.lives--;
     this.livesText.setText(`Lives: ${this.lives}`);
@@ -131,6 +146,11 @@ export class GameScene extends Phaser.Scene {
       // Reset player after a short delay
       this.time.delayedCall(500, () => {
         this.player.reset();
+        
+        // Remove invulnerability after 1.5 seconds
+        this.time.delayedCall(1500, () => {
+          this.isInvulnerable = false;
+        });
       });
     }
   }

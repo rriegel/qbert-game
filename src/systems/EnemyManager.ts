@@ -48,6 +48,18 @@ export class EnemyManager {
   }
 
   /**
+   * Update all enemies without checking collisions (during invulnerability)
+   */
+  updateWithoutCollision(): void {
+    for (const enemy of this.enemies) {
+      if (enemy.isAlive) {
+        enemy.update();
+      }
+    }
+    this.enemies = this.enemies.filter(e => e.isAlive);
+  }
+
+  /**
    * Spawn a random enemy
    */
   private spawnEnemy(): void {
