@@ -16,7 +16,6 @@ export abstract class Enemy {
   protected scene: Phaser.Scene;
   protected hopDuration: number = 400;
   protected isHopping: boolean = false;
-  protected isEntering: boolean = true;
 
   constructor(scene: Phaser.Scene, row: number, col: number) {
     this.scene = scene;
@@ -30,6 +29,7 @@ export abstract class Enemy {
     this.screenY = screenPos.y;
     
     this.graphics = scene.add.graphics();
+    this.graphics.setPosition(this.screenX, this.screenY);
     this.graphics.setDepth(row + 1);
     this.render();
   }
@@ -92,18 +92,11 @@ export abstract class Enemy {
    * Only returns true if the hop animation has completed
    */
   isAtPosition(row: number, col: number): boolean {
-    // Don't check collision while hopping or entering
-    if (this.isHopping || this.isEntering) {
+    // Don't check collision while hopping
+    if (this.isHopping) {
       return false;
     }
     return this.row === row && this.col === col;
-  }
-
-  /**
-   * Mark enemy as fully entered (can now collide)
-   */
-  setEntered(): void {
-    this.isEntering = false;
   }
 
   /**

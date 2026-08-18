@@ -67,7 +67,7 @@ export class Coily extends Enemy {
         return;
       }
       
-      this.hop(targetRow, targetCol, () => this.setEntered());
+      this.hop(targetRow, targetCol);
     } else {
       // Snake chases player
       this.chasePlayer();
