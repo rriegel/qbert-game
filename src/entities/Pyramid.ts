@@ -107,6 +107,16 @@ export class Pyramid {
   }
 
   /**
+   * Reset a single cube to initial color (used by Slick enemy)
+   */
+  resetCubeColor(row: number, col: number): void {
+    const cube = this.getCube(row, col);
+    if (cube) {
+      cube.reset(this.targetColorIndex);
+    }
+  }
+
+  /**
    * Destroy all cubes
    */
   destroy() {
