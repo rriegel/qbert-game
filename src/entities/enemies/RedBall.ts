@@ -47,7 +47,7 @@ export class RedBall extends Enemy {
       return;
     }
     
-    this.hop(targetRow, targetCol);
+    this.hop(targetRow, targetCol, () => this.setEntered());
   }
 
   destroy(): void {
