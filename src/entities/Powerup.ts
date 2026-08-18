@@ -25,6 +25,7 @@ export class Powerup {
     
     this.graphics = scene.add.graphics();
     this.graphics.setDepth(row + 1);
+    this.graphics.setPosition(this.screenX, this.screenY);
     this.render();
   }
   
