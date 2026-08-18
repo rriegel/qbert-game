@@ -13,6 +13,8 @@ export class EnemyManager {
   private spawnInterval: number = 5000;
   private currentLevel: number = 1;
   private onPlayerDeath: (() => void) | null = null;
+  private lastCollisionTime: number = 0;
+  private collisionCooldown: number = 1000; // 1 second cooldown between collisions
 
   constructor(scene: Phaser.Scene, pyramid: Pyramid) {
     this.scene = scene;
@@ -97,10 +99,14 @@ export class EnemyManager {
           enemy.setPlayerPosition(playerRow, playerCol);
         }
         
-        // Check collision with player
+        // Check collision with player (respect cooldown)
         if (enemy.isAtPosition(playerRow, playerCol)) {
-          if (this.onPlayerDeath) {
-            this.onPlayerDeath();
+          const now = this.scene.time.now;
+          if (now - this.lastCollisionTime > this.collisionCooldown) {
+            this.lastCollisionTime = now;
+            if (this.onPlayerDeath) {
+              this.onPlayerDeath();
+            }
           }
         }
       }
