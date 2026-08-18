@@ -17,6 +17,7 @@ export class EnemyManager {
   private collisionCooldown: number = 5000; // 5 second cooldown between collisions
   private framesSinceCollision: number = 999; // Frame-based cooldown
   private minFramesBetweenCollisions: number = 120; // At least 120 frames (2 seconds at 60fps)
+  private isPaused: boolean = false;
 
   constructor(scene: Phaser.Scene, pyramid: Pyramid) {
     this.scene = scene;
@@ -43,6 +44,20 @@ export class EnemyManager {
   resetCollisionCooldown(): void {
     this.lastCollisionTime = this.scene.time.now;
     this.framesSinceCollision = 0;
+  }
+
+  /**
+   * Pause enemy movement (during level transition)
+   */
+  pause(): void {
+    this.isPaused = true;
+  }
+
+  /**
+   * Resume enemy movement
+   */
+  resume(): void {
+    this.isPaused = false;
   }
 
   /**
@@ -102,6 +117,11 @@ export class EnemyManager {
     let collisionDetected = false;
     this.framesSinceCollision++;
     
+    // Skip all updates if paused
+    if (this.isPaused) {
+      return;
+    }
+    
     // Skip collision detection if player is invulnerable
     if (isInvulnerable) {
       // Still update enemies
@@ -153,15 +173,22 @@ export class EnemyManager {
   }
 
   /**
+   * Clear all enemies without destroying the spawn timer
+   */
+  clearAllEnemies(): void {
+    for (const enemy of this.enemies) {
+      enemy.destroy();
+    }
+    this.enemies = [];
+  }
+
+  /**
    * Destroy all enemies
    */
   destroy(): void {
     if (this.spawnTimer) {
       this.spawnTimer.destroy();
     }
-    for (const enemy of this.enemies) {
-      enemy.destroy();
-    }
-    this.enemies = [];
+    this.clearAllEnemies();
   }
 }

@@ -10,6 +10,8 @@ export abstract class Enemy {
   public screenX: number;
   public screenY: number;
   public isAlive: boolean = true;
+  public previousRow: number = 0;
+  public previousCol: number = 0;
   
   protected scene: Phaser.Scene;
   protected hopDuration: number = 400;
@@ -19,6 +21,8 @@ export abstract class Enemy {
     this.scene = scene;
     this.row = row;
     this.col = col;
+    this.previousRow = row;
+    this.previousCol = col;
     
     const screenPos = gridToScreen(row, col);
     this.screenX = screenPos.x;
@@ -48,6 +52,8 @@ export abstract class Enemy {
     if (this.isHopping) return;
     
     this.isHopping = true;
+    this.previousRow = this.row;
+    this.previousCol = this.col;
     this.row = targetRow;
     this.col = targetCol;
     
@@ -82,8 +88,13 @@ export abstract class Enemy {
 
   /**
    * Check if enemy is at the same position as another entity
+   * Only returns true if the hop animation has completed
    */
   isAtPosition(row: number, col: number): boolean {
+    // Don't check collision while hopping
+    if (this.isHopping) {
+      return false;
+    }
     return this.row === row && this.col === col;
   }
 

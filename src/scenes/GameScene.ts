@@ -160,6 +160,9 @@ export class GameScene extends Phaser.Scene {
   private handleLevelComplete() {
     this.isLevelTransitioning = true;
     
+    // Pause enemies during level transition
+    this.enemyManager.pause();
+    
     // Add level bonus
     this.scoreSystem.addLevelBonus(this.levelSystem.currentLevel);
     
@@ -177,7 +180,11 @@ export class GameScene extends Phaser.Scene {
       completeText.destroy();
       this.levelSystem.advanceLevel();
       this.player.reset();
+      
+      // Clear all enemies from previous level
+      this.enemyManager.clearAllEnemies();
       this.enemyManager.setLevel(this.levelSystem.currentLevel);
+      this.enemyManager.resume();
       this.isLevelTransitioning = false;
       
       // Update level display
