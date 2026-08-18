@@ -4,6 +4,7 @@ import { Player } from '../entities/Player';
 import { InputSystem } from '../systems/InputSystem';
 
 export class GameScene extends Phaser.Scene {
+  private pyramid!: Pyramid;
   private player!: Player;
   private inputSystem!: InputSystem;
 
@@ -13,7 +14,7 @@ export class GameScene extends Phaser.Scene {
 
   create() {
     // Create pyramid with 2 color steps (Level 1)
-    new Pyramid(this, 1);
+    this.pyramid = new Pyramid(this, 1);
     
     // Create player at top of pyramid
     this.player = new Player(this, 0, 0);
@@ -45,6 +46,9 @@ export class GameScene extends Phaser.Scene {
             this.time.delayedCall(500, () => {
               this.player.reset();
             });
+          } else {
+            // Landed on pyramid - change cube color
+            this.pyramid.changeCubeColor(this.player.row, this.player.col);
           }
         });
       }
