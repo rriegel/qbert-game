@@ -69,13 +69,8 @@ export class GameScene extends Phaser.Scene {
       return;
     }
     
-    // Update enemies (only check collisions if not invulnerable)
-    if (!this.isInvulnerable) {
-      this.enemyManager.update(this.player.row, this.player.col);
-    } else {
-      // Still update enemies but skip collision detection
-      this.enemyManager.updateWithoutCollision();
-    }
+    // Update enemies (pass invulnerability flag to skip collision detection)
+    this.enemyManager.update(this.player.row, this.player.col, this.isInvulnerable);
     
     // Check for input and initiate hop if not already hopping
     if (!this.player.isHopping) {
@@ -150,8 +145,6 @@ export class GameScene extends Phaser.Scene {
         // Remove invulnerability after 1.5 seconds
         this.time.delayedCall(1500, () => {
           this.isInvulnerable = false;
-          // Reset collision cooldown when invulnerability ends
-          this.enemyManager.resetCollisionCooldown();
         });
       });
     }

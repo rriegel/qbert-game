@@ -98,9 +98,24 @@ export class EnemyManager {
   /**
    * Update all enemies and check collisions
    */
-  update(playerRow: number, playerCol: number): void {
+  update(playerRow: number, playerCol: number, isInvulnerable: boolean = false): void {
     let collisionDetected = false;
     this.framesSinceCollision++;
+    
+    // Skip collision detection if player is invulnerable
+    if (isInvulnerable) {
+      // Still update enemies
+      for (const enemy of this.enemies) {
+        if (enemy.isAlive) {
+          enemy.update();
+          if (enemy instanceof Coily) {
+            enemy.setPlayerPosition(playerRow, playerCol);
+          }
+        }
+      }
+      this.enemies = this.enemies.filter(e => e.isAlive);
+      return;
+    }
     
     // Update enemies
     for (const enemy of this.enemies) {
