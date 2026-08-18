@@ -117,6 +117,7 @@ export class GameScene extends Phaser.Scene {
       fontFamily: 'Arial',
       align: 'center'
     }).setOrigin(0.5);
+    completeText.setDepth(1000);
     
     // Advance to next level after delay
     this.time.delayedCall(2000, () => {
