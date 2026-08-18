@@ -3,12 +3,14 @@ import { Player } from '../entities/Player';
 import { InputSystem } from '../systems/InputSystem';
 import { LevelSystem } from '../systems/LevelSystem';
 import { ScoreSystem } from '../systems/ScoreSystem';
+import { EnemyManager } from '../systems/EnemyManager';
 
 export class GameScene extends Phaser.Scene {
   private player!: Player;
   private inputSystem!: InputSystem;
   private levelSystem!: LevelSystem;
   private scoreSystem!: ScoreSystem;
+  private enemyManager!: EnemyManager;
   private isLevelTransitioning: boolean = false;
   private levelText!: Phaser.GameObjects.Text;
   private lives: number = 3;
@@ -33,8 +35,12 @@ export class GameScene extends Phaser.Scene {
     // Set up input system
     this.inputSystem = new InputSystem(this);
     
+    // Set up enemy manager
+    this.enemyManager = new EnemyManager(this, this.levelSystem.pyramid);
+    this.enemyManager.setOnPlayerDeath(() => this.handlePlayerDeath());
+    
     // UI
-    this.add.text(10, 70, 'Q*bert - Phase 3: Game Loop', {
+    this.add.text(10, 70, 'Q*bert - Phase 4: Enemies', {
       fontSize: '18px',
       color: '#ffffff'
     });
@@ -60,6 +66,9 @@ export class GameScene extends Phaser.Scene {
     if (this.isLevelTransitioning) {
       return;
     }
+    
+    // Update enemies
+    this.enemyManager.update(this.player.row, this.player.col);
     
     // Check for input and initiate hop if not already hopping
     if (!this.player.isHopping) {
@@ -104,6 +113,28 @@ export class GameScene extends Phaser.Scene {
     }
   }
   
+  private handlePlayerDeath() {
+    // Lose a life
+    this.lives--;
+    this.livesText.setText(`Lives: ${this.lives}`);
+    this.scoreSystem.resetCombo();
+    
+    if (this.lives <= 0) {
+      // Game over
+      this.time.delayedCall(500, () => {
+        this.scene.start('GameOverScene', { 
+          score: this.scoreSystem.getScore(), 
+          level: this.levelSystem.currentLevel 
+        });
+      });
+    } else {
+      // Reset player after a short delay
+      this.time.delayedCall(500, () => {
+        this.player.reset();
+      });
+    }
+  }
+  
   private handleLevelComplete() {
     this.isLevelTransitioning = true;
     
@@ -124,6 +155,7 @@ export class GameScene extends Phaser.Scene {
       completeText.destroy();
       this.levelSystem.advanceLevel();
       this.player.reset();
+      this.enemyManager.setLevel(this.levelSystem.currentLevel);
       this.isLevelTransitioning = false;
       
       // Update level display

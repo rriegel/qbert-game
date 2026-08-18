@@ -52,8 +52,6 @@ export abstract class Enemy {
     this.col = targetCol;
     
     const targetPos = gridToScreen(targetRow, targetCol);
-    const startX = this.screenX;
-    const startY = this.screenY;
     
     // Update depth for proper layering
     this.graphics.setDepth(targetRow + 1);

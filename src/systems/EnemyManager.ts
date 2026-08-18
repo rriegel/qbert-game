@@ -4,7 +4,6 @@ import { RedBall } from '../entities/enemies/RedBall';
 import { Coily } from '../entities/enemies/Coily';
 import { Slick } from '../entities/enemies/Slick';
 import { Pyramid } from '../entities/Pyramid';
-import { PYRAMID_ROWS } from '../config/constants';
 
 export class EnemyManager {
   private scene: Phaser.Scene;
@@ -56,7 +55,6 @@ export class EnemyManager {
     
     if (this.currentLevel >= 3 && rand < 0.3) {
       // Spawn Slick (from level 3+)
-      const col = Math.floor(Math.random() * 2); // Start at top row
       const slick = new Slick(this.scene, 0, 0);
       slick.setOnRevertCube((row, col) => {
         this.pyramid.resetCubeColor(row, col);
