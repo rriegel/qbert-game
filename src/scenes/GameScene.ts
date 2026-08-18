@@ -9,12 +9,21 @@ export class GameScene extends Phaser.Scene {
   private levelSystem!: LevelSystem;
   private isLevelTransitioning: boolean = false;
   private levelText!: Phaser.GameObjects.Text;
+  private lives: number = 3;
+  private livesText!: Phaser.GameObjects.Text;
+  private score: number = 0;
+  private scoreText!: Phaser.GameObjects.Text;
 
   constructor() {
     super({ key: 'GameScene' });
   }
 
   create() {
+    // Reset game state
+    this.lives = 3;
+    this.score = 0;
+    this.isLevelTransitioning = false;
+    
     // Create level system (manages pyramid internally)
     this.levelSystem = new LevelSystem(this);
     
@@ -24,7 +33,7 @@ export class GameScene extends Phaser.Scene {
     // Set up input system
     this.inputSystem = new InputSystem(this);
     
-    // Add some debug text
+    // UI
     this.add.text(10, 10, 'Q*bert - Phase 3: Game Loop', {
       fontSize: '18px',
       color: '#ffffff'
@@ -38,6 +47,16 @@ export class GameScene extends Phaser.Scene {
     this.levelText = this.add.text(10, 60, 'Level: 1', {
       fontSize: '14px',
       color: '#aaaaaa'
+    });
+    
+    this.livesText = this.add.text(10, 85, 'Lives: 3', {
+      fontSize: '14px',
+      color: '#ff6666'
+    });
+    
+    this.scoreText = this.add.text(10, 110, 'Score: 0', {
+      fontSize: '14px',
+      color: '#66ff66'
     });
   }
 
@@ -54,13 +73,26 @@ export class GameScene extends Phaser.Scene {
         this.player.hop(direction, () => {
           // After hop completes, check if player fell off (alpha = 0)
           if (this.player.graphics.alpha === 0) {
-            // Reset after a short delay
-            this.time.delayedCall(500, () => {
-              this.player.reset();
-            });
+            // Player fell off - lose a life
+            this.lives--;
+            this.livesText.setText(`Lives: ${this.lives}`);
+            
+            if (this.lives <= 0) {
+              // Game over
+              this.time.delayedCall(500, () => {
+                this.scene.start('GameOverScene', { score: this.score, level: this.levelSystem.currentLevel });
+              });
+            } else {
+              // Reset player after a short delay
+              this.time.delayedCall(500, () => {
+                this.player.reset();
+              });
+            }
           } else {
-            // Landed on pyramid - change cube color
+            // Landed on pyramid - change cube color and add score
             this.levelSystem.pyramid.changeCubeColor(this.player.row, this.player.col);
+            this.score += 10;
+            this.scoreText.setText(`Score: ${this.score}`);
             
             // Check if level is complete
             if (this.levelSystem.isLevelComplete()) {
