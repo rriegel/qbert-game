@@ -126,11 +126,11 @@ export class GameScene extends Phaser.Scene {
       return;
     }
     
-    // Set invulnerability
+    // Set invulnerability immediately
     this.isInvulnerable = true;
     
-    // Lose a life
-    this.lives--;
+    // Lose a life (prevent going negative)
+    this.lives = Math.max(0, this.lives - 1);
     this.livesText.setText(`Lives: ${this.lives}`);
     this.scoreSystem.resetCombo();
     

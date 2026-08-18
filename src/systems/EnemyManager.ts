@@ -89,6 +89,8 @@ export class EnemyManager {
    * Update all enemies and check collisions
    */
   update(playerRow: number, playerCol: number): void {
+    let collisionDetected = false;
+    
     // Update enemies
     for (const enemy of this.enemies) {
       if (enemy.isAlive) {
@@ -99,11 +101,12 @@ export class EnemyManager {
           enemy.setPlayerPosition(playerRow, playerCol);
         }
         
-        // Check collision with player (respect cooldown)
-        if (enemy.isAtPosition(playerRow, playerCol)) {
+        // Check collision with player (only if no collision this frame)
+        if (!collisionDetected && enemy.isAtPosition(playerRow, playerCol)) {
           const now = this.scene.time.now;
           if (now - this.lastCollisionTime > this.collisionCooldown) {
             this.lastCollisionTime = now;
+            collisionDetected = true;
             if (this.onPlayerDeath) {
               this.onPlayerDeath();
             }
