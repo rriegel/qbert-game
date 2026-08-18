@@ -85,7 +85,7 @@ export class GameScene extends Phaser.Scene {
           // After hop completes, check if player fell off (alpha = 0)
           if (this.player.graphics.alpha === 0) {
             // Player fell off - lose a life and reset combo
-            this.lives--;
+            this.lives = Math.max(0, this.lives - 1);
             this.livesText.setText(`Lives: ${this.lives}`);
             this.scoreSystem.resetCombo();
             
