@@ -4,7 +4,7 @@ import { COLORS, PYRAMID_ROWS } from '../../config/constants';
 
 export class Coily extends Enemy {
   private isEgg: boolean = true;
-  private moveTimer: Phaser.Time.TimerEvent;
+  private moveTimer!: Phaser.Time.TimerEvent;
   private moveInterval: number = 600;
   private playerRow: number = 0;
   private playerCol: number = 0;
@@ -13,11 +13,13 @@ export class Coily extends Enemy {
     super(scene, row, col);
     this.hopDuration = 350;
     
-    // Start bouncing down as egg
-    this.moveTimer = scene.time.addEvent({
-      delay: this.moveInterval,
-      loop: true,
-      callback: () => this.move()
+    // Animate entry from bottom, then start moving
+    this.enterFromBottom(() => {
+      this.moveTimer = scene.time.addEvent({
+        delay: this.moveInterval,
+        loop: true,
+        callback: () => this.move()
+      });
     });
   }
 
@@ -61,9 +63,11 @@ export class Coily extends Enemy {
       const targetRow = this.row - 1;
       const targetCol = goRight ? this.col : this.col - 1;
       
-      // If reached top, hatch
+      // If reached top, hop off upward
       if (targetRow < 0) {
-        this.hatch();
+        this.hopOff(targetRow, targetCol, () => {
+          this.destroy();
+        });
         return;
       }
       
@@ -117,6 +121,10 @@ export class Coily extends Enemy {
     
     // Validate move is on pyramid
     if (targetRow < 0 || targetRow >= PYRAMID_ROWS) {
+      // Hop off the pyramid
+      this.hopOff(targetRow, targetCol, () => {
+        this.destroy();
+      });
       return;
     }
     if (targetCol < 0 || targetCol > targetRow) {

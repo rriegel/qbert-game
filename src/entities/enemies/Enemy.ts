@@ -105,6 +105,67 @@ export abstract class Enemy {
   }
 
   /**
+   * Animate enemy entering from above the screen
+   */
+  enterFromTop(onComplete: () => void): void {
+    const targetX = this.screenX;
+    const targetY = this.screenY;
+    this.graphics.setPosition(targetX, targetY - 200);
+    this.scene.tweens.add({
+      targets: this.graphics,
+      x: targetX,
+      y: targetY,
+      duration: 500,
+      ease: 'Bounce.easeOut',
+      onComplete: () => onComplete()
+    });
+  }
+
+  /**
+   * Animate enemy entering from below the screen
+   */
+  enterFromBottom(onComplete: () => void): void {
+    const targetX = this.screenX;
+    const targetY = this.screenY;
+    this.graphics.setPosition(targetX, targetY + 200);
+    this.scene.tweens.add({
+      targets: this.graphics,
+      x: targetX,
+      y: targetY,
+      duration: 500,
+      ease: 'Cubic.easeOut',
+      onComplete: () => onComplete()
+    });
+  }
+
+  /**
+   * Animate enemy hopping off the pyramid
+   */
+  hopOff(targetRow: number, targetCol: number, onComplete: () => void): void {
+    const targetPos = gridToScreen(targetRow, targetCol);
+    const startX = this.screenX;
+    const startY = this.screenY;
+    
+    this.scene.tweens.add({
+      targets: this.graphics,
+      x: targetPos.x,
+      y: targetPos.y,
+      duration: this.hopDuration,
+      ease: 'Sine.easeOut',
+      onUpdate: (tween) => {
+        const progress = tween.progress;
+        const arcHeight = -30;
+        const arc = arcHeight * Math.sin(progress * Math.PI);
+        const currentX = startX + (targetPos.x - startX) * progress;
+        const currentY = startY + (targetPos.y - startY) * progress;
+        this.graphics.x = currentX;
+        this.graphics.y = currentY + arc;
+      },
+      onComplete: () => onComplete()
+    });
+  }
+
+  /**
    * Destroy the enemy
    */
   destroy(): void {

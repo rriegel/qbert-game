@@ -3,18 +3,20 @@ import { Enemy } from './Enemy';
 import { COLORS, PYRAMID_ROWS } from '../../config/constants';
 
 export class RedBall extends Enemy {
-  private moveTimer: Phaser.Time.TimerEvent;
+  private moveTimer!: Phaser.Time.TimerEvent;
   private moveInterval: number = 800;
 
   constructor(scene: Phaser.Scene, row: number = 0, col: number = 0) {
     super(scene, row, col);
     this.hopDuration = 350;
     
-    // Start moving after a brief delay
-    this.moveTimer = scene.time.addEvent({
-      delay: this.moveInterval,
-      loop: true,
-      callback: () => this.move()
+    // Animate entry from top, then start moving
+    this.enterFromTop(() => {
+      this.moveTimer = scene.time.addEvent({
+        delay: this.moveInterval,
+        loop: true,
+        callback: () => this.move()
+      });
     });
   }
 
@@ -41,9 +43,11 @@ export class RedBall extends Enemy {
     const targetRow = this.row + 1;
     const targetCol = goRight ? this.col + 1 : this.col;
     
-    // If off the pyramid, destroy self
+    // If off the pyramid, hop off and destroy
     if (targetRow >= PYRAMID_ROWS) {
-      this.destroy();
+      this.hopOff(targetRow, targetCol, () => {
+        this.destroy();
+      });
       return;
     }
     

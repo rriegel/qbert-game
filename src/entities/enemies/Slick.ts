@@ -3,7 +3,7 @@ import { Enemy } from './Enemy';
 import { COLORS } from '../../config/constants';
 
 export class Slick extends Enemy {
-  private moveTimer: Phaser.Time.TimerEvent;
+  private moveTimer!: Phaser.Time.TimerEvent;
   private moveInterval: number = 700;
   private onRevertCube: ((row: number, col: number) => void) | null = null;
 
@@ -11,11 +11,13 @@ export class Slick extends Enemy {
     super(scene, row, col);
     this.hopDuration = 350;
     
-    // Start moving after a brief delay
-    this.moveTimer = scene.time.addEvent({
-      delay: this.moveInterval,
-      loop: true,
-      callback: () => this.move()
+    // Animate entry from bottom, then start moving
+    this.enterFromBottom(() => {
+      this.moveTimer = scene.time.addEvent({
+        delay: this.moveInterval,
+        loop: true,
+        callback: () => this.move()
+      });
     });
   }
 
@@ -51,9 +53,11 @@ export class Slick extends Enemy {
     const targetRow = this.row - 1;
     const targetCol = goRight ? this.col : this.col - 1;
     
-    // If off the pyramid, destroy self
+    // If off the pyramid, hop off upward
     if (targetRow < 0 || targetCol < 0 || targetCol > targetRow) {
-      this.destroy();
+      this.hopOff(targetRow, targetCol, () => {
+        this.destroy();
+      });
       return;
     }
     
