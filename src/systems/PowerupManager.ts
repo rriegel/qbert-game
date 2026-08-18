@@ -2,20 +2,24 @@ import Phaser from 'phaser';
 import { Disk } from '../entities/Disk';
 import { Shield } from '../entities/Shield';
 import { SlowMo } from '../entities/SlowMo';
+import { Paintbrush } from '../entities/Paintbrush';
 import { Player } from '../entities/Player';
+import { Pyramid } from '../entities/Pyramid';
 import { EnemyManager } from './EnemyManager';
 import { ScoreSystem } from './ScoreSystem';
 
 export class PowerupManager {
   private scene: Phaser.Scene;
-  private powerups: (Disk | Shield | SlowMo)[] = [];
+  private powerups: (Disk | Shield | SlowMo | Paintbrush)[] = [];
   private spawnTimer: number = 0;
+  private pyramid: Pyramid;
   private spawnInterval: number = 15000; // 15 seconds between spawn attempts
   private enemyManager?: EnemyManager;
   private scoreSystem?: ScoreSystem;
   
-  constructor(scene: Phaser.Scene) {
+  constructor(scene: Phaser.Scene, pyramid: Pyramid) {
     this.scene = scene;
+    this.pyramid = pyramid;
   }
   
   /**
@@ -73,17 +77,20 @@ export class PowerupManager {
       col = row; // rightmost column
     }
     
-    // Randomly choose between Disk, Shield, and SlowMo
+    // Randomly choose between Disk, Shield, SlowMo, and Paintbrush
     const powerupType = Math.random();
-    if (powerupType < 0.5) {
+    if (powerupType < 0.4) {
       const disk = new Disk(this.scene, row, col);
       this.powerups.push(disk);
-    } else if (powerupType < 0.8) {
+    } else if (powerupType < 0.7) {
       const shield = new Shield(this.scene, row, col);
       this.powerups.push(shield);
-    } else {
+    } else if (powerupType < 0.9) {
       const slowmo = new SlowMo(this.scene, row, col);
       this.powerups.push(slowmo);
+    } else {
+      const paintbrush = new Paintbrush(this.scene, row, col);
+      this.powerups.push(paintbrush);
     }
     
     // Show spawn notification
@@ -117,6 +124,8 @@ export class PowerupManager {
           this.collectShield(powerup, player);
         } else if (powerup instanceof SlowMo) {
           this.collectSlowMo(powerup);
+        } else if (powerup instanceof Paintbrush) {
+          this.collectPaintbrush(powerup);
         }
         break;
       }
@@ -188,6 +197,54 @@ export class PowerupManager {
       const text = this.scene.add.text(400, 200, 'Slow-Mo!', {
         fontSize: '24px',
         color: '#FFEB3B',
+        fontFamily: 'monospace'
+      });
+      text.setOrigin(0.5);
+      text.setScrollFactor(0);
+      
+      this.scene.tweens.add({
+        targets: text,
+        y: 150,
+        alpha: 0,
+        duration: 1500,
+        ease: 'Power2',
+        onComplete: () => text.destroy()
+      });
+    });
+  }
+
+  /**
+   * Collect Paintbrush powerup - colors 3 random uncolored cubes instantly
+   */
+  private collectPaintbrush(paintbrush: Paintbrush): void {
+    paintbrush.animateCollection(() => {
+      // Color 3 random uncolored cubes
+      const uncoloredCubes: Array<{row: number, col: number}> = [];
+      
+      // Find all uncolored cubes (rows 1-5, all columns)
+      for (let row = 1; row <= 5; row++) {
+        for (let col = 0; col <= row; col++) {
+          if (!this.pyramid.isCubeColored(row, col)) {
+            uncoloredCubes.push({row, col});
+          }
+        }
+      }
+      
+      // Shuffle and pick up to 3
+      for (let i = uncoloredCubes.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [uncoloredCubes[i], uncoloredCubes[j]] = [uncoloredCubes[j], uncoloredCubes[i]];
+      }
+      
+      const cubesToColor = uncoloredCubes.slice(0, 3);
+      for (const cube of cubesToColor) {
+        this.pyramid.colorCube(cube.row, cube.col);
+      }
+      
+      // Show notification
+      const text = this.scene.add.text(400, 200, `Paintbrush! (${cubesToColor.length} cubes)`, {
+        fontSize: '24px',
+        color: '#FF6B35',
         fontFamily: 'monospace'
       });
       text.setOrigin(0.5);

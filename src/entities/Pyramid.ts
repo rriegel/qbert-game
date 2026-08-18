@@ -117,6 +117,27 @@ export class Pyramid {
   }
 
   /**
+   * Check if a cube is at target color
+   */
+  isCubeColored(row: number, col: number): boolean {
+    const cube = this.getCube(row, col);
+    return cube ? cube.isComplete() : false;
+  }
+
+  /**
+   * Set a cube directly to target color (used by Paintbrush powerup)
+   */
+  colorCube(row: number, col: number): void {
+    const cube = this.getCube(row, col);
+    if (cube && !cube.isComplete()) {
+      // Increment until at target color
+      while (!cube.isComplete()) {
+        cube.incrementColor();
+      }
+    }
+  }
+
+  /**
    * Destroy all cubes
    */
   destroy() {

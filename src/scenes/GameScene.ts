@@ -44,7 +44,7 @@ export class GameScene extends Phaser.Scene {
     this.enemyManager.setOnPlayerDeath(() => this.handlePlayerDeath());
     
     // Set up powerup manager
-    this.powerupManager = new PowerupManager(this);
+    this.powerupManager = new PowerupManager(this, this.levelSystem.pyramid);
     this.powerupManager.setEnemyManager(this.enemyManager);
     this.powerupManager.setScoreSystem(this.scoreSystem);
     
