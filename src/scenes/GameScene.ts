@@ -2,17 +2,17 @@ import Phaser from 'phaser';
 import { Player } from '../entities/Player';
 import { InputSystem } from '../systems/InputSystem';
 import { LevelSystem } from '../systems/LevelSystem';
+import { ScoreSystem } from '../systems/ScoreSystem';
 
 export class GameScene extends Phaser.Scene {
   private player!: Player;
   private inputSystem!: InputSystem;
   private levelSystem!: LevelSystem;
+  private scoreSystem!: ScoreSystem;
   private isLevelTransitioning: boolean = false;
   private levelText!: Phaser.GameObjects.Text;
   private lives: number = 3;
   private livesText!: Phaser.GameObjects.Text;
-  private score: number = 0;
-  private scoreText!: Phaser.GameObjects.Text;
 
   constructor() {
     super({ key: 'GameScene' });
@@ -21,11 +21,11 @@ export class GameScene extends Phaser.Scene {
   create() {
     // Reset game state
     this.lives = 3;
-    this.score = 0;
     this.isLevelTransitioning = false;
     
-    // Create level system (manages pyramid internally)
+    // Create systems
     this.levelSystem = new LevelSystem(this);
+    this.scoreSystem = new ScoreSystem(this);
     
     // Create player at top of pyramid
     this.player = new Player(this, 0, 0);
@@ -34,29 +34,24 @@ export class GameScene extends Phaser.Scene {
     this.inputSystem = new InputSystem(this);
     
     // UI
-    this.add.text(10, 10, 'Q*bert - Phase 3: Game Loop', {
+    this.add.text(10, 70, 'Q*bert - Phase 3: Game Loop', {
       fontSize: '18px',
       color: '#ffffff'
     });
     
-    this.add.text(10, 35, 'Use arrow keys to hop diagonally', {
+    this.add.text(10, 95, 'Use arrow keys to hop diagonally', {
       fontSize: '14px',
       color: '#aaaaaa'
     });
     
-    this.levelText = this.add.text(10, 60, 'Level: 1', {
+    this.levelText = this.add.text(10, 120, 'Level: 1', {
       fontSize: '14px',
       color: '#aaaaaa'
     });
     
-    this.livesText = this.add.text(10, 85, 'Lives: 3', {
+    this.livesText = this.add.text(10, 145, 'Lives: 3', {
       fontSize: '14px',
       color: '#ff6666'
-    });
-    
-    this.scoreText = this.add.text(10, 110, 'Score: 0', {
-      fontSize: '14px',
-      color: '#66ff66'
     });
   }
 
@@ -73,14 +68,18 @@ export class GameScene extends Phaser.Scene {
         this.player.hop(direction, () => {
           // After hop completes, check if player fell off (alpha = 0)
           if (this.player.graphics.alpha === 0) {
-            // Player fell off - lose a life
+            // Player fell off - lose a life and reset combo
             this.lives--;
             this.livesText.setText(`Lives: ${this.lives}`);
+            this.scoreSystem.resetCombo();
             
             if (this.lives <= 0) {
               // Game over
               this.time.delayedCall(500, () => {
-                this.scene.start('GameOverScene', { score: this.score, level: this.levelSystem.currentLevel });
+                this.scene.start('GameOverScene', { 
+                  score: this.scoreSystem.getScore(), 
+                  level: this.levelSystem.currentLevel 
+                });
               });
             } else {
               // Reset player after a short delay
@@ -90,9 +89,10 @@ export class GameScene extends Phaser.Scene {
             }
           } else {
             // Landed on pyramid - change cube color and add score
-            this.levelSystem.pyramid.changeCubeColor(this.player.row, this.player.col);
-            this.score += 10;
-            this.scoreText.setText(`Score: ${this.score}`);
+            const changed = this.levelSystem.pyramid.changeCubeColor(this.player.row, this.player.col);
+            if (changed) {
+              this.scoreSystem.addCubeScore();
+            }
             
             // Check if level is complete
             if (this.levelSystem.isLevelComplete()) {
@@ -106,6 +106,9 @@ export class GameScene extends Phaser.Scene {
   
   private handleLevelComplete() {
     this.isLevelTransitioning = true;
+    
+    // Add level bonus
+    this.scoreSystem.addLevelBonus(this.levelSystem.currentLevel);
     
     // Show level complete message
     const completeText = this.add.text(400, 300, 'Level Complete!', {
