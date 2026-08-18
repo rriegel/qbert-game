@@ -193,4 +193,24 @@ export class EnemyManager {
     }
     this.clearAllEnemies();
   }
+
+  /**
+   * Make all Coily enemies fall off the pyramid (when player uses disk)
+   * Returns the number of Coily enemies defeated
+   */
+  makeCoilyFallOff(): number {
+    let defeatedCount = 0;
+    
+    for (const enemy of this.enemies) {
+      if (enemy instanceof Coily && enemy.isAlive) {
+        // Animate Coily falling off
+        enemy.hopOff(enemy.row + 1, enemy.col, () => {
+          enemy.destroy();
+        });
+        defeatedCount++;
+      }
+    }
+    
+    return defeatedCount;
+  }
 }

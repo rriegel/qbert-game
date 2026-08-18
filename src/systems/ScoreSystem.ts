@@ -65,6 +65,29 @@ export class ScoreSystem {
     });
   }
 
+  public addEnemyDefeatScore(count: number = 1): void {
+    const points = 500 * count;
+    this.score += points;
+    this.updateUI();
+
+    // Show floating score text
+    const text = this.scene.add.text(400, 300, `Coily Defeated: +${points}`, {
+      fontSize: '24px',
+      color: '#ff00ff',
+      fontFamily: 'monospace'
+    });
+    text.setOrigin(0.5);
+    text.setScrollFactor(0);
+
+    this.scene.tweens.add({
+      targets: text,
+      y: 250,
+      alpha: 0,
+      duration: 1500,
+      ease: 'Power2'
+    });
+  }
+
   public resetCombo(): void {
     this.combo = 0;
     this.updateUI();

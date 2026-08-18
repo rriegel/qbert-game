@@ -4,6 +4,7 @@ import { InputSystem } from '../systems/InputSystem';
 import { LevelSystem } from '../systems/LevelSystem';
 import { ScoreSystem } from '../systems/ScoreSystem';
 import { EnemyManager } from '../systems/EnemyManager';
+import { PowerupManager } from '../systems/PowerupManager';
 
 export class GameScene extends Phaser.Scene {
   private player!: Player;
@@ -11,6 +12,7 @@ export class GameScene extends Phaser.Scene {
   private levelSystem!: LevelSystem;
   private scoreSystem!: ScoreSystem;
   private enemyManager!: EnemyManager;
+  private powerupManager!: PowerupManager;
   private isLevelTransitioning: boolean = false;
   private isInvulnerable: boolean = false;
   private levelText!: Phaser.GameObjects.Text;
@@ -40,6 +42,11 @@ export class GameScene extends Phaser.Scene {
     // Set up enemy manager
     this.enemyManager = new EnemyManager(this, this.levelSystem.pyramid);
     this.enemyManager.setOnPlayerDeath(() => this.handlePlayerDeath());
+    
+    // Set up powerup manager
+    this.powerupManager = new PowerupManager(this);
+    this.powerupManager.setEnemyManager(this.enemyManager);
+    this.powerupManager.setScoreSystem(this.scoreSystem);
     
     // UI
     this.add.text(10, 70, 'Q*bert - Phase 4: Enemies', {
@@ -78,6 +85,9 @@ export class GameScene extends Phaser.Scene {
     
     // Update enemies (pass invulnerability flag to skip collision detection)
     this.enemyManager.update(this.player.row, this.player.col, this.isInvulnerable);
+    
+    // Update powerups
+    this.powerupManager.update(this.player);
     
     // Check for input and initiate hop if not already hopping
     if (!this.player.isHopping) {
@@ -181,8 +191,9 @@ export class GameScene extends Phaser.Scene {
       this.levelSystem.advanceLevel();
       this.player.reset();
       
-      // Clear all enemies from previous level
+      // Clear all enemies and powerups from previous level
       this.enemyManager.clearAllEnemies();
+      this.powerupManager.clearAllPowerups();
       this.enemyManager.setLevel(this.levelSystem.currentLevel);
       this.enemyManager.resume();
       this.isLevelTransitioning = false;
