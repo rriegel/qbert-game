@@ -65,8 +65,9 @@ export class PowerupManager {
    * Try to spawn a disk on a pyramid edge
    */
   private trySpawnDisk(): void {
-    // Don't spawn if there's already a disk
-    if (this.powerups.length > 0) return;
+    // Don't spawn if there's already a Disk on the board
+    const hasDisk = this.powerups.some(p => p instanceof Disk);
+    if (hasDisk) return;
     
     // Pick a random edge position (left or right side)
     const side = Math.random() < 0.5 ? 'left' : 'right';
