@@ -58,12 +58,13 @@ export abstract class Enemy {
     this.row = targetRow;
     this.col = targetCol;
     
+    const startPos = { x: this.screenX, y: this.screenY };
     const targetPos = gridToScreen(targetRow, targetCol);
     
     // Update depth for proper layering
     this.graphics.setDepth(targetRow + 1);
     
-    // Animate hop with arc
+    // Animate hop with arc - interpolate from start to target
     this.scene.tweens.add({
       targets: this.graphics,
       x: targetPos.x,
@@ -72,10 +73,14 @@ export abstract class Enemy {
       ease: 'Sine.easeOut',
       onUpdate: (tween) => {
         const progress = tween.progress;
+        // Interpolate position from start to target
+        const currentX = startPos.x + (targetPos.x - startPos.x) * progress;
+        const currentY = startPos.y + (targetPos.y - startPos.y) * progress;
         // Add arc (jump up and down)
         const arcHeight = -30;
         const arc = arcHeight * Math.sin(progress * Math.PI);
-        this.graphics.y = targetPos.y + arc;
+        this.graphics.x = currentX;
+        this.graphics.y = currentY + arc;
       },
       onComplete: () => {
         this.screenX = targetPos.x;
