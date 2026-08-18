@@ -36,3 +36,18 @@ export const SCORE_CUBE_COLOR = 25;
 export const SCORE_LEVEL_BONUS = 250;
 export const SCORE_POWERUP = 100;
 export const SCORE_ENEMY_DEFEAT = 500;
+
+// Level configurations
+export const LEVEL_CONFIGS = [
+  { targetColorIndex: 1 },  // Level 1: change to yellow
+  { targetColorIndex: 2 },  // Level 2: change to green
+  { targetColorIndex: 1 },  // Level 3: change to yellow
+  { targetColorIndex: 2 },  // Level 4: change to green
+];
+
+// Cube color palette (in order)
+export const CUBE_COLORS = [
+  0x2196F3,  // 0: Blue (start)
+  0xFFC107,  // 1: Yellow (mid)
+  0x4CAF50,  // 2: Green (target)
+];
