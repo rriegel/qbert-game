@@ -56,13 +56,19 @@ export class Coily extends Enemy {
     if (this.isHopping || !this.isAlive) return;
     
     if (this.isEgg) {
-      // Egg bounces down randomly
+      // Egg bounces up randomly (spawns from bottom)
       const goRight = Math.random() > 0.5;
-      const targetRow = this.row + 1;
-      const targetCol = goRight ? this.col + 1 : this.col;
+      const targetRow = this.row - 1;
+      const targetCol = goRight ? this.col : this.col - 1;
       
-      // If reached bottom, hatch
-      if (targetRow >= PYRAMID_ROWS) {
+      // If reached top, hatch
+      if (targetRow < 0) {
+        this.hatch();
+        return;
+      }
+      
+      // Validate column is on pyramid
+      if (targetCol < 0 || targetCol > targetRow) {
         this.hatch();
         return;
       }

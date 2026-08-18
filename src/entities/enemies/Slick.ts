@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { Enemy } from './Enemy';
-import { COLORS, PYRAMID_ROWS } from '../../config/constants';
+import { COLORS } from '../../config/constants';
 
 export class Slick extends Enemy {
   private moveTimer: Phaser.Time.TimerEvent;
@@ -46,13 +46,13 @@ export class Slick extends Enemy {
   private move(): void {
     if (this.isHopping || !this.isAlive) return;
     
-    // Move down randomly
+    // Move up randomly (spawns from bottom)
     const goRight = Math.random() > 0.5;
-    const targetRow = this.row + 1;
-    const targetCol = goRight ? this.col + 1 : this.col;
+    const targetRow = this.row - 1;
+    const targetCol = goRight ? this.col : this.col - 1;
     
     // If off the pyramid, destroy self
-    if (targetRow >= PYRAMID_ROWS) {
+    if (targetRow < 0 || targetCol < 0 || targetCol > targetRow) {
       this.destroy();
       return;
     }

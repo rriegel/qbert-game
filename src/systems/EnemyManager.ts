@@ -93,18 +93,20 @@ export class EnemyManager {
     const rand = Math.random();
     
     if (this.currentLevel >= 3 && rand < 0.3) {
-      // Spawn Slick (from level 3+)
-      const slick = new Slick(this.scene, 0, 0);
+      // Spawn Slick from bottom (randomly left or right)
+      const spawnCol = Math.random() > 0.5 ? 0 : 6;
+      const slick = new Slick(this.scene, 6, spawnCol);
       slick.setOnRevertCube((row, col) => {
         this.pyramid.resetCubeColor(row, col);
       });
       this.enemies.push(slick);
     } else if (this.currentLevel >= 2 && rand < 0.6) {
-      // Spawn Coily (from level 2+)
-      const coily = new Coily(this.scene, 0, 0);
+      // Spawn Coily from bottom (randomly left or right)
+      const spawnCol = Math.random() > 0.5 ? 0 : 6;
+      const coily = new Coily(this.scene, 6, spawnCol);
       this.enemies.push(coily);
     } else {
-      // Spawn Red Ball
+      // Spawn Red Ball from top
       const redBall = new RedBall(this.scene, 0, 0);
       this.enemies.push(redBall);
     }
