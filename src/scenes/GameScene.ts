@@ -69,6 +69,13 @@ export class GameScene extends Phaser.Scene {
       return;
     }
     
+    // Visual indicator for invulnerability (flash player)
+    if (this.isInvulnerable) {
+      this.player.graphics.alpha = Math.sin(this.time.now / 100) > 0 ? 1 : 0.3;
+    } else {
+      this.player.graphics.alpha = 1;
+    }
+    
     // Update enemies (pass invulnerability flag to skip collision detection)
     this.enemyManager.update(this.player.row, this.player.col, this.isInvulnerable);
     

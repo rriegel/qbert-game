@@ -130,13 +130,19 @@ export class EnemyManager {
         // Check collision with player (only if no collision this frame and enough frames have passed)
         if (!collisionDetected && enemy.isAtPosition(playerRow, playerCol)) {
           const now = this.scene.time.now;
-          if (now - this.lastCollisionTime > this.collisionCooldown && this.framesSinceCollision >= this.minFramesBetweenCollisions) {
+          const timeSinceLastCollision = now - this.lastCollisionTime;
+          console.log(`Collision detected! Time since last: ${timeSinceLastCollision}ms, Frames since: ${this.framesSinceCollision}, Cooldown: ${this.collisionCooldown}ms, Min frames: ${this.minFramesBetweenCollisions}`);
+          
+          if (timeSinceLastCollision > this.collisionCooldown && this.framesSinceCollision >= this.minFramesBetweenCollisions) {
+            console.log('✓ Collision accepted - triggering player death');
             this.lastCollisionTime = now;
             this.framesSinceCollision = 0;
             collisionDetected = true;
             if (this.onPlayerDeath) {
               this.onPlayerDeath();
             }
+          } else {
+            console.log(`✗ Collision rejected - time check: ${timeSinceLastCollision > this.collisionCooldown}, frame check: ${this.framesSinceCollision >= this.minFramesBetweenCollisions}`);
           }
         }
       }
