@@ -83,7 +83,7 @@ export class PowerupManager {
     // Randomly choose between Disk, Shield, SlowMo, and Paintbrush
     const powerupType = Math.random();
     if (powerupType < 0.4) {
-      const disk = new Disk(this.scene, row, col);
+      const disk = new Disk(this.scene, row, col, side as 'left' | 'right');
       this.powerups.push(disk);
     } else if (powerupType < 0.7) {
       const shield = new Shield(this.scene, row, col);
@@ -138,7 +138,7 @@ export class PowerupManager {
   /**
    * Collect a disk and teleport player
    */
-  private collectDisk(disk: Disk, player: Player): void {
+  public collectDisk(disk: Disk, player: Player): void {
     // Animate disk collection
     disk.animateCollection(() => {
       // Teleport player to top
@@ -262,6 +262,21 @@ export class PowerupManager {
         onComplete: () => text.destroy()
       });
     });
+  }
+
+  /**
+   * Check if player hopping off edge should land on a disk
+   * Returns the disk if found, null otherwise
+   */
+  checkDiskLanding(fromRow: number, fromCol: number, direction: 'up-left' | 'up-right' | 'down-left' | 'down-right'): Disk | null {
+    for (const powerup of this.powerups) {
+      if (powerup instanceof Disk && powerup.isActive) {
+        if (powerup.isTargetForHop(fromRow, fromCol, direction)) {
+          return powerup;
+        }
+      }
+    }
+    return null;
   }
 
   /**

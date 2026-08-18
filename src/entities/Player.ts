@@ -10,6 +10,7 @@ export class Player {
   public screenY: number;
   public isHopping: boolean = false;
   public hasShield: boolean = false;
+  public powerupManager: any = null; // Will be set by GameScene
   
   private scene: Phaser.Scene;
   private shieldGraphics?: Phaser.GameObjects.Graphics;
@@ -162,6 +163,15 @@ export class Player {
     
     // Check if target is valid
     if (!this.isValidPosition(targetRow, targetCol)) {
+      // Check if there's a disk to land on
+      if (this.powerupManager) {
+        const disk = this.powerupManager.checkDiskLanding(this.row, this.col, direction);
+        if (disk) {
+          // Hop to the disk and teleport to top
+          this.hopToDisk(disk, onComplete);
+          return true;
+        }
+      }
       // Fall off the edge
       this.fall(direction, onComplete);
       return true;
@@ -204,6 +214,45 @@ export class Player {
     });
     
     return true;
+  }
+
+  /**
+   * Hop to a disk and teleport to top
+   */
+  private hopToDisk(disk: any, onComplete?: () => void) {
+    this.isHopping = true;
+    
+    // Get disk screen position
+    const targetScreen = { x: disk.screenX, y: disk.screenY };
+    const startX = this.screenX;
+    const startY = this.screenY;
+    const dx = targetScreen.x - startX;
+    const dy = targetScreen.y - startY;
+    
+    // Parabolic hop animation
+    const duration = 300;
+    const hopHeight = 60;
+    
+    this.scene.tweens.addCounter({
+      from: 0,
+      to: 1,
+      duration,
+      ease: 'Sine.easeInOut',
+      onUpdate: (tween) => {
+        const t = tween.getValue() ?? 0;
+        const x = startX + dx * t;
+        const arcOffset = -4 * hopHeight * t * (1 - t);
+        const y = startY + dy * t + arcOffset;
+        
+        this.graphics.setPosition(x, y);
+      },
+      onComplete: () => {
+        // Collect the disk and teleport to top
+        this.powerupManager.collectDisk(disk, this);
+        this.isHopping = false;
+        onComplete?.();
+      }
+    });
   }
 
   /**

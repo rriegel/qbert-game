@@ -47,6 +47,7 @@ export class GameScene extends Phaser.Scene {
     this.powerupManager = new PowerupManager(this, this.levelSystem.pyramid);
     this.powerupManager.setEnemyManager(this.enemyManager);
     this.powerupManager.setScoreSystem(this.scoreSystem);
+    this.player.powerupManager = this.powerupManager;
     
     // UI
     this.add.text(10, 70, 'Q*bert - Phase 4: Enemies', {
