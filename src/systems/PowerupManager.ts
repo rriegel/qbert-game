@@ -16,6 +16,8 @@ export class PowerupManager {
   private spawnInterval: number = 15000; // 15 seconds between spawn attempts
   private enemyManager?: EnemyManager;
   private scoreSystem?: ScoreSystem;
+  private extraLifeMilestone: number = 10000; // Award extra life every 10,000 points
+  private lastMilestoneReached: number = 0;
   
   constructor(scene: Phaser.Scene, pyramid: Pyramid) {
     this.scene = scene;
@@ -284,5 +286,36 @@ export class PowerupManager {
    */
   resume(): void {
     // Disks resume updating
+  }
+
+  /**
+   * Check if player reached a score milestone and award extra life
+   */
+  checkExtraLife(score: number, onExtraLife: () => void): void {
+    const currentMilestone = Math.floor(score / this.extraLifeMilestone);
+    
+    if (currentMilestone > this.lastMilestoneReached) {
+      this.lastMilestoneReached = currentMilestone;
+      onExtraLife();
+      
+      // Show notification
+      const text = this.scene.add.text(400, 300, 'Extra Life!', {
+        fontSize: '32px',
+        color: '#00ff00',
+        fontFamily: 'monospace',
+        fontStyle: 'bold'
+      });
+      text.setOrigin(0.5);
+      text.setScrollFactor(0);
+      
+      this.scene.tweens.add({
+        targets: text,
+        y: 250,
+        alpha: 0,
+        duration: 2000,
+        ease: 'Power2',
+        onComplete: () => text.destroy()
+      });
+    }
   }
 }

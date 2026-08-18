@@ -89,6 +89,12 @@ export class GameScene extends Phaser.Scene {
     // Update powerups
     this.powerupManager.update(this.player);
     
+    // Check for extra life milestone
+    this.powerupManager.checkExtraLife(this.scoreSystem.getScore(), () => {
+      this.lives++;
+      this.livesText.setText(`Lives: ${this.lives}`);
+    });
+    
     // Check for input and initiate hop if not already hopping
     if (!this.player.isHopping) {
       const direction = this.inputSystem.getDirection();
