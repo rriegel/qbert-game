@@ -14,9 +14,9 @@ export class EnemyManager {
   private currentLevel: number = 1;
   private onPlayerDeath: (() => void) | null = null;
   private lastCollisionTime: number = 0;
-  private collisionCooldown: number = 2000; // 2 second cooldown between collisions
+  private collisionCooldown: number = 5000; // 5 second cooldown between collisions
   private framesSinceCollision: number = 999; // Frame-based cooldown
-  private minFramesBetweenCollisions: number = 60; // At least 60 frames (1 second at 60fps)
+  private minFramesBetweenCollisions: number = 120; // At least 120 frames (2 seconds at 60fps)
 
   constructor(scene: Phaser.Scene, pyramid: Pyramid) {
     this.scene = scene;
