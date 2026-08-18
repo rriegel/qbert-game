@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { Pyramid } from '../entities/Pyramid';
+import { Player } from '../entities/Player';
 
 export class GameScene extends Phaser.Scene {
   private pyramid!: Pyramid;
@@ -12,19 +13,17 @@ export class GameScene extends Phaser.Scene {
     // Create pyramid with 2 color steps (Level 1)
     this.pyramid = new Pyramid(this, 1);
     
+    // Create player at top of pyramid (will be used in next commit)
+    new Player(this, 0, 0);
+    
     // Add some debug text
-    this.add.text(10, 10, 'Q*bert - Phase 1: Pyramid Rendering', {
+    this.add.text(10, 10, 'Q*bert - Phase 2: Player Movement', {
       fontSize: '18px',
       color: '#ffffff'
     });
     
-    this.add.text(10, 35, `Total cubes: ${this.pyramid.getTotalCubes()}`, {
+    this.add.text(10, 35, 'Use arrow keys to hop diagonally', {
       fontSize: '14px',
-      color: '#ffffff'
-    });
-    
-    this.add.text(10, 55, 'Press any cube to change its color', {
-      fontSize: '12px',
       color: '#aaaaaa'
     });
     
