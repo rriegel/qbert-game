@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { gridToScreen } from '../utils/Isometric';
+import { Direction } from '../systems/InputSystem';
 
 export class Player {
   public row: number;
@@ -7,8 +8,12 @@ export class Player {
   public graphics: Phaser.GameObjects.Graphics;
   public screenX: number;
   public screenY: number;
+  public isHopping: boolean = false;
+  
+  private scene: Phaser.Scene;
 
   constructor(scene: Phaser.Scene, startRow: number = 0, startCol: number = 0) {
+    this.scene = scene;
     this.row = startRow;
     this.col = startCol;
 
@@ -55,6 +60,75 @@ export class Player {
     this.screenX = screenPos.x;
     this.screenY = screenPos.y;
     this.graphics.setPosition(this.screenX, this.screenY);
+  }
+
+  /**
+   * Hop in the given direction with a parabolic arc animation.
+   * Returns true if hop started, false if already hopping.
+   */
+  hop(direction: Direction, onComplete?: () => void): boolean {
+    if (this.isHopping) return false;
+    
+    this.isHopping = true;
+    
+    // Calculate target grid position
+    let targetRow = this.row;
+    let targetCol = this.col;
+    
+    switch (direction) {
+      case 'up-left':
+        targetRow--;
+        targetCol--;
+        break;
+      case 'up-right':
+        targetRow--;
+        break;
+      case 'down-left':
+        targetRow++;
+        break;
+      case 'down-right':
+        targetRow++;
+        targetCol++;
+        break;
+    }
+    
+    // Get target screen position
+    const targetScreen = gridToScreen(targetRow, targetCol);
+    const startX = this.screenX;
+    const startY = this.screenY;
+    const dx = targetScreen.x - startX;
+    const dy = targetScreen.y - startY;
+    
+    // Parabolic hop animation (300ms)
+    const duration = 300;
+    const hopHeight = 60; // pixels up at peak
+    
+    this.scene.tweens.addCounter({
+      from: 0,
+      to: 1,
+      duration,
+      ease: 'Sine.easeInOut',
+      onUpdate: (tween) => {
+        const t = tween.getValue() ?? 0;
+        // Horizontal: linear interpolation
+        const x = startX + dx * t;
+        // Vertical: parabolic arc (goes up then down)
+        const arcOffset = -4 * hopHeight * t * (1 - t);
+        const y = startY + dy * t + arcOffset;
+        
+        this.graphics.setPosition(x, y);
+      },
+      onComplete: () => {
+        // Update grid position
+        this.row = targetRow;
+        this.col = targetCol;
+        this.updatePosition();
+        this.isHopping = false;
+        onComplete?.();
+      }
+    });
+    
+    return true;
   }
 
   /**
