@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { CUBE_WIDTH, CUBE_HEIGHT, COLORS } from '../config/constants';
+import { CUBE_WIDTH, CUBE_HEIGHT, CUBE_COLORS } from '../config/constants';
 import { gridToScreen } from '../utils/Isometric';
 
 export class Cube {
@@ -27,6 +27,7 @@ export class Cube {
     this.screenY = screenPos.y;
     
     this.graphics = scene.add.graphics();
+    this.graphics.setDepth(row);
     this.render();
   }
 
@@ -77,9 +78,8 @@ export class Cube {
    * Get the current color based on colorIndex
    */
   private getColor(): number {
-    if (this.colorIndex === 0) return COLORS.CUBE_START;
-    if (this.colorIndex >= this.targetColorIndex) return COLORS.CUBE_TARGET;
-    return COLORS.CUBE_MID;
+    const index = Math.min(this.colorIndex, CUBE_COLORS.length - 1);
+    return CUBE_COLORS[index];
   }
 
   /**

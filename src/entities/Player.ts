@@ -22,6 +22,7 @@ export class Player {
     this.screenY = screenPos.y;
 
     this.graphics = scene.add.graphics();
+    this.graphics.setDepth(this.row + 1);
     this.render();
   }
 
@@ -59,6 +60,7 @@ export class Player {
     const screenPos = gridToScreen(this.row, this.col);
     this.screenX = screenPos.x;
     this.screenY = screenPos.y;
+    this.graphics.setDepth(this.row + 1);
     this.graphics.setPosition(this.screenX, this.screenY);
   }
 

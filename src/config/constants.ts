@@ -36,3 +36,20 @@ export const SCORE_CUBE_COLOR = 25;
 export const SCORE_LEVEL_BONUS = 250;
 export const SCORE_POWERUP = 100;
 export const SCORE_ENEMY_DEFEAT = 500;
+
+// Level configurations - each level has different requirements
+export const LEVEL_CONFIGS = [
+  { targetColorIndex: 1 },  // Level 1: 1 hop per cube (blue → yellow)
+  { targetColorIndex: 2 },  // Level 2: 2 hops per cube (blue → green)
+  { targetColorIndex: 3 },  // Level 3: 3 hops per cube (blue → purple)
+  { targetColorIndex: 1 },  // Level 4: 1 hop per cube (blue → yellow) - easier after hard level
+  { targetColorIndex: 2 },  // Level 5: 2 hops per cube
+];
+
+// Cube color palette (in order of progression)
+export const CUBE_COLORS = [
+  0x2196F3,  // 0: Blue (start)
+  0xFFC107,  // 1: Yellow
+  0x4CAF50,  // 2: Green
+  0x9C27B0,  // 3: Purple
+];
