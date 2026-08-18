@@ -13,7 +13,7 @@ export class PowerupManager {
   private powerups: (Disk | Shield | SlowMo | Paintbrush)[] = [];
   private spawnTimer: number = 0;
   private pyramid: Pyramid;
-  private spawnInterval: number = 15000; // 15 seconds between spawn attempts
+  private spawnInterval: number = 10000; // 10 seconds between spawn attempts
   private enemyManager?: EnemyManager;
   private scoreSystem?: ScoreSystem;
   private extraLifeMilestone: number = 10000; // Award extra life every 10,000 points

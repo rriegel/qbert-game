@@ -13,13 +13,11 @@ export class Coily extends Enemy {
     super(scene, row, col);
     this.hopDuration = 350;
     
-    // Animate entry from bottom, then start moving
-    this.enterFromBottom(() => {
-      this.moveTimer = scene.time.addEvent({
-        delay: this.moveInterval,
-        loop: true,
-        callback: () => this.move()
-      });
+    // Start moving immediately (egg bounces down from top)
+    this.moveTimer = scene.time.addEvent({
+      delay: this.moveInterval,
+      loop: true,
+      callback: () => this.move()
     });
   }
 
@@ -58,35 +56,40 @@ export class Coily extends Enemy {
     if (this.isHopping || !this.isAlive) return;
     
     if (this.isEgg) {
-      // Egg bounces up randomly (spawns from bottom)
+      // Egg bounces DOWN randomly (spawns from top)
       const goRight = Math.random() > 0.5;
-      const targetRow = this.row - 1;
-      const targetCol = goRight ? this.col : this.col - 1;
+      const targetRow = this.row + 1; // Move DOWN
+      const targetCol = goRight ? this.col + 1 : this.col;
       
-      // If reached top, hop off upward
-      if (targetRow < 0) {
-        this.hopOff(targetRow, targetCol, () => {
-          this.destroy();
-        });
+      // If reached bottom of pyramid, hatch into snake
+      if (targetRow >= PYRAMID_ROWS) {
+        this.hatch();
         return;
       }
       
       // Validate column is on pyramid
       if (targetCol < 0 || targetCol > targetRow) {
-        this.hatch();
+        // Bounce off edge - try other direction
+        const altCol = goRight ? this.col : this.col + 1;
+        if (altCol >= 0 && altCol <= targetRow) {
+          this.hop(targetRow, altCol);
+        } else {
+          // Can't move, just hatch here
+          this.hatch();
+        }
         return;
       }
       
       this.hop(targetRow, targetCol);
     } else {
-      // Snake chases player
+      // Snake chases player aggressively
       this.chasePlayer();
     }
   }
 
   private hatch(): void {
     this.isEgg = false;
-    this.moveInterval = 500; // Faster as snake
+    this.moveInterval = 450; // Faster as snake
     this.moveTimer.reset({
       delay: this.moveInterval,
       loop: true,
@@ -96,39 +99,50 @@ export class Coily extends Enemy {
   }
 
   private chasePlayer(): void {
-    // Move toward player's position
+    // Move toward player's position - snake is aggressive and moves every tick
     const rowDiff = this.playerRow - this.row;
     const colDiff = this.playerCol - this.col;
     
     let targetRow = this.row;
     let targetCol = this.col;
     
-    // Try to match player's row first
+    // Try to match player's row first, then column
     if (rowDiff > 0) {
-      // Move down
+      // Move down toward player
       targetRow = this.row + 1;
       targetCol = this.col + (colDiff > 0 ? 1 : 0);
     } else if (rowDiff < 0) {
-      // Move up
+      // Move up toward player
       targetRow = this.row - 1;
       targetCol = this.col + (colDiff > 0 ? 0 : -1);
     } else {
-      // Same row, move horizontally
-      targetCol = this.col + (colDiff > 0 ? 1 : -1);
-      // Stay on same row by moving diagonally
-      targetRow = this.row;
+      // Same row, move horizontally toward player
+      if (colDiff > 0) {
+        // Player is to the right - move down-right
+        targetRow = this.row + 1;
+        targetCol = this.col + 1;
+      } else if (colDiff < 0) {
+        // Player is to the left - move down-left
+        targetRow = this.row + 1;
+        targetCol = this.col;
+      } else {
+        // Same position - shouldn't happen but stay put
+        return;
+      }
     }
     
     // Validate move is on pyramid
     if (targetRow < 0 || targetRow >= PYRAMID_ROWS) {
-      // Hop off the pyramid
+      // Hop off the pyramid (fall to death)
       this.hopOff(targetRow, targetCol, () => {
         this.destroy();
       });
       return;
     }
     if (targetCol < 0 || targetCol > targetRow) {
-      return;
+      // Invalid position - try to stay on pyramid
+      // Clamp column to valid range
+      targetCol = Math.max(0, Math.min(targetRow, targetCol));
     }
     
     this.hop(targetRow, targetCol);

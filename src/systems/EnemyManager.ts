@@ -101,9 +101,8 @@ export class EnemyManager {
       });
       this.enemies.push(slick);
     } else if (this.currentLevel >= 2 && rand < 0.6) {
-      // Spawn Coily from bottom (randomly left or right)
-      const spawnCol = Math.random() > 0.5 ? 0 : 6;
-      const coily = new Coily(this.scene, 6, spawnCol);
+      // Spawn Coily from top (row 0, col 0) - egg bounces down
+      const coily = new Coily(this.scene, 0, 0);
       this.enemies.push(coily);
     } else {
       // Spawn Red Ball from top
