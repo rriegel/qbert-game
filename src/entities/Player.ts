@@ -9,8 +9,10 @@ export class Player {
   public screenX: number;
   public screenY: number;
   public isHopping: boolean = false;
+  public hasShield: boolean = false;
   
   private scene: Phaser.Scene;
+  private shieldGraphics?: Phaser.GameObjects.Graphics;
 
   constructor(scene: Phaser.Scene, startRow: number = 0, startCol: number = 0) {
     this.scene = scene;
@@ -24,6 +26,53 @@ export class Player {
     this.graphics = scene.add.graphics();
     this.graphics.setDepth(this.row + 1);
     this.render();
+  }
+
+  /**
+   * Activate shield (protects from one enemy hit)
+   */
+  activateShield(): void {
+    this.hasShield = true;
+    
+    // Create shield glow effect
+    if (this.shieldGraphics) {
+      this.shieldGraphics.destroy();
+    }
+    this.shieldGraphics = this.scene.add.graphics();
+    this.shieldGraphics.setDepth(this.row + 1.5);
+    
+    // Pulsing cyan glow around player
+    this.scene.tweens.addCounter({
+      from: 0,
+      to: Math.PI * 2,
+      duration: 1000,
+      repeat: -1,
+      onUpdate: (tween) => {
+        if (!this.hasShield || !this.shieldGraphics) return;
+        
+        const phase = tween.getValue() ?? 0;
+        const alpha = Math.sin(phase) * 0.3 + 0.5;
+        
+        this.shieldGraphics.clear();
+        this.shieldGraphics.fillStyle(0x03A9F4, alpha);
+        this.shieldGraphics.fillCircle(0, -20, 22);
+        this.shieldGraphics.lineStyle(2, 0xFFFFFF, 0.8);
+        this.shieldGraphics.strokeCircle(0, -20, 22);
+        
+        this.shieldGraphics.setPosition(this.screenX, this.screenY);
+      }
+    });
+  }
+
+  /**
+   * Consume shield (called when hit by enemy)
+   */
+  consumeShield(): void {
+    this.hasShield = false;
+    if (this.shieldGraphics) {
+      this.shieldGraphics.destroy();
+      this.shieldGraphics = undefined;
+    }
   }
 
   /**
@@ -51,6 +100,11 @@ export class Player {
     this.graphics.fillTriangle(-4, -18, 4, -18, 0, -12);
 
     this.graphics.setPosition(this.screenX, this.screenY);
+    
+    // Update shield position if active
+    if (this.shieldGraphics && this.hasShield) {
+      this.shieldGraphics.setPosition(this.screenX, this.screenY);
+    }
   }
 
   /**
@@ -62,6 +116,11 @@ export class Player {
     this.screenY = screenPos.y;
     this.graphics.setDepth(this.row + 1);
     this.graphics.setPosition(this.screenX, this.screenY);
+    
+    // Update shield position if active
+    if (this.shieldGraphics && this.hasShield) {
+      this.shieldGraphics.setPosition(this.screenX, this.screenY);
+    }
   }
 
   /**
