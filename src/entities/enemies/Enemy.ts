@@ -14,8 +14,10 @@ export abstract class Enemy {
   public previousCol: number = 0;
   
   protected scene: Phaser.Scene;
+  protected baseHopDuration: number = 400;
   protected hopDuration: number = 400;
   protected isHopping: boolean = false;
+  protected speedMultiplier: number = 1.0;
 
   constructor(scene: Phaser.Scene, row: number, col: number) {
     this.scene = scene;
@@ -163,6 +165,14 @@ export abstract class Enemy {
       },
       onComplete: () => onComplete()
     });
+  }
+
+  /**
+   * Set speed multiplier (1.0 = normal, 0.5 = half speed, etc.)
+   */
+  setSpeedMultiplier(multiplier: number): void {
+    this.speedMultiplier = multiplier;
+    this.hopDuration = this.baseHopDuration / multiplier;
   }
 
   /**

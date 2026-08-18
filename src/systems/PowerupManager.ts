@@ -1,13 +1,14 @@
 import Phaser from 'phaser';
 import { Disk } from '../entities/Disk';
 import { Shield } from '../entities/Shield';
+import { SlowMo } from '../entities/SlowMo';
 import { Player } from '../entities/Player';
 import { EnemyManager } from './EnemyManager';
 import { ScoreSystem } from './ScoreSystem';
 
 export class PowerupManager {
   private scene: Phaser.Scene;
-  private powerups: (Disk | Shield)[] = [];
+  private powerups: (Disk | Shield | SlowMo)[] = [];
   private spawnTimer: number = 0;
   private spawnInterval: number = 15000; // 15 seconds between spawn attempts
   private enemyManager?: EnemyManager;
@@ -72,14 +73,17 @@ export class PowerupManager {
       col = row; // rightmost column
     }
     
-    // Randomly choose between Disk and Shield (70% Disk, 30% Shield)
+    // Randomly choose between Disk, Shield, and SlowMo
     const powerupType = Math.random();
-    if (powerupType < 0.7) {
+    if (powerupType < 0.5) {
       const disk = new Disk(this.scene, row, col);
       this.powerups.push(disk);
-    } else {
+    } else if (powerupType < 0.8) {
       const shield = new Shield(this.scene, row, col);
       this.powerups.push(shield);
+    } else {
+      const slowmo = new SlowMo(this.scene, row, col);
+      this.powerups.push(slowmo);
     }
     
     // Show spawn notification
@@ -111,6 +115,8 @@ export class PowerupManager {
           this.collectDisk(powerup, player);
         } else if (powerup instanceof Shield) {
           this.collectShield(powerup, player);
+        } else if (powerup instanceof SlowMo) {
+          this.collectSlowMo(powerup);
         }
         break;
       }
@@ -168,6 +174,36 @@ export class PowerupManager {
     });
   }
   
+  /**
+   * Collect SlowMo powerup - slows all enemies for 10 seconds
+   */
+  private collectSlowMo(slowmo: SlowMo): void {
+    slowmo.animateCollection(() => {
+      // Slow all enemies for 10 seconds
+      if (this.enemyManager) {
+        this.enemyManager.slowEnemies(10000);
+      }
+      
+      // Show notification
+      const text = this.scene.add.text(400, 200, 'Slow-Mo!', {
+        fontSize: '24px',
+        color: '#FFEB3B',
+        fontFamily: 'monospace'
+      });
+      text.setOrigin(0.5);
+      text.setScrollFactor(0);
+      
+      this.scene.tweens.add({
+        targets: text,
+        y: 150,
+        alpha: 0,
+        duration: 1500,
+        ease: 'Power2',
+        onComplete: () => text.destroy()
+      });
+    });
+  }
+
   /**
    * Clear all powerups
    */

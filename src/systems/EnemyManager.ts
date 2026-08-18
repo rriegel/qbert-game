@@ -213,4 +213,22 @@ export class EnemyManager {
     
     return defeatedCount;
   }
+
+  /**
+   * Slow down all enemies for a duration
+   */
+  slowEnemies(duration: number): void {
+    for (const enemy of this.enemies) {
+      if (enemy.isAlive) {
+        enemy.setSpeedMultiplier(0.5);
+        
+        // Restore normal speed after duration
+        this.scene.time.delayedCall(duration, () => {
+          if (enemy.isAlive) {
+            enemy.setSpeedMultiplier(1.0);
+          }
+        });
+      }
+    }
+  }
 }
