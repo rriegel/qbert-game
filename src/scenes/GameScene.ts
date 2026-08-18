@@ -1,20 +1,22 @@
 import Phaser from 'phaser';
-import { Pyramid } from '../entities/Pyramid';
 import { Player } from '../entities/Player';
 import { InputSystem } from '../systems/InputSystem';
+import { LevelSystem } from '../systems/LevelSystem';
 
 export class GameScene extends Phaser.Scene {
-  private pyramid!: Pyramid;
   private player!: Player;
   private inputSystem!: InputSystem;
+  private levelSystem!: LevelSystem;
+  private isLevelTransitioning: boolean = false;
+  private levelText!: Phaser.GameObjects.Text;
 
   constructor() {
     super({ key: 'GameScene' });
   }
 
   create() {
-    // Create pyramid with 2 color steps (Level 1)
-    this.pyramid = new Pyramid(this, 1);
+    // Create level system (manages pyramid internally)
+    this.levelSystem = new LevelSystem(this);
     
     // Create player at top of pyramid
     this.player = new Player(this, 0, 0);
@@ -23,7 +25,7 @@ export class GameScene extends Phaser.Scene {
     this.inputSystem = new InputSystem(this);
     
     // Add some debug text
-    this.add.text(10, 10, 'Q*bert - Phase 2: Player Movement', {
+    this.add.text(10, 10, 'Q*bert - Phase 3: Game Loop', {
       fontSize: '18px',
       color: '#ffffff'
     });
@@ -32,9 +34,19 @@ export class GameScene extends Phaser.Scene {
       fontSize: '14px',
       color: '#aaaaaa'
     });
+    
+    this.levelText = this.add.text(10, 60, 'Level: 1', {
+      fontSize: '14px',
+      color: '#aaaaaa'
+    });
   }
 
   update() {
+    // Skip input during level transition
+    if (this.isLevelTransitioning) {
+      return;
+    }
+    
     // Check for input and initiate hop if not already hopping
     if (!this.player.isHopping) {
       const direction = this.inputSystem.getDirection();
@@ -48,10 +60,38 @@ export class GameScene extends Phaser.Scene {
             });
           } else {
             // Landed on pyramid - change cube color
-            this.pyramid.changeCubeColor(this.player.row, this.player.col);
+            this.levelSystem.pyramid.changeCubeColor(this.player.row, this.player.col);
+            
+            // Check if level is complete
+            if (this.levelSystem.isLevelComplete()) {
+              this.handleLevelComplete();
+            }
           }
         });
       }
     }
+  }
+  
+  private handleLevelComplete() {
+    this.isLevelTransitioning = true;
+    
+    // Show level complete message
+    const completeText = this.add.text(400, 300, 'Level Complete!', {
+      fontSize: '48px',
+      color: '#00ff00',
+      fontFamily: 'Arial',
+      align: 'center'
+    }).setOrigin(0.5);
+    
+    // Advance to next level after delay
+    this.time.delayedCall(2000, () => {
+      completeText.destroy();
+      this.levelSystem.advanceLevel();
+      this.player.reset();
+      this.isLevelTransitioning = false;
+      
+      // Update level display
+      this.levelText.setText(`Level: ${this.levelSystem.currentLevel}`);
+    });
   }
 }
