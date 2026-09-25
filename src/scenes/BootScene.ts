@@ -6,8 +6,8 @@ export class BootScene extends Phaser.Scene {
   }
 
   create() {
-    // For now, just transition to GameScene
-    // Later we'll load assets here
-    this.scene.start('GameScene');
+    // For now, no assets to load — transition straight to the title screen.
+    // Asset loading will be added here later.
+    this.scene.start('TitleScene');
   }
 }
