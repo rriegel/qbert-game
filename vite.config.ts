@@ -15,6 +15,9 @@ export default defineConfig({
     minify: 'esbuild'
   },
   server: {
+    // Bind to all interfaces (0.0.0.0) so the dev server is reachable from
+    // other devices via Tailscale/LAN, not just localhost on the host box.
+    host: true,
     port: 3000,
     open: true
   }
