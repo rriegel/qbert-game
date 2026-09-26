@@ -34,10 +34,12 @@ export class Pyramid {
    * Get cube at grid position
    */
   getCube(row: number, col: number): Cube | null {
-    if (!isValidPosition(row, col)) {
+    // Guard against rows that no longer exist (destroyed/reset pyramid) —
+    // in-flight collection tweens can call this after the grid is torn down.
+    if (!isValidPosition(row, col) || !this.cubes[row]) {
       return null;
     }
-    return this.cubes[row][col];
+    return this.cubes[row][col] ?? null;
   }
 
   /**

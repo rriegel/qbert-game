@@ -37,6 +37,16 @@ export class PowerupManager {
   setScoreSystem(scoreSystem: ScoreSystem): void {
     this.scoreSystem = scoreSystem;
   }
+
+  /**
+   * Re-sync the pyramid reference after a level transition.
+   * LevelSystem.advanceLevel() destroys the old pyramid; any powerup
+   * collection tween still in flight would otherwise operate on the
+   * destroyed instance and crash.
+   */
+  setPyramid(pyramid: Pyramid): void {
+    this.pyramid = pyramid;
+  }
   
   /**
    * Update powerups and spawn logic

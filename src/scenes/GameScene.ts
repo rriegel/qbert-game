@@ -201,6 +201,10 @@ export class GameScene extends Phaser.Scene {
       // Clear all enemies and powerups from previous level
       this.enemyManager.clearAllEnemies();
       this.powerupManager.clearAllPowerups();
+      // Re-sync managers to the NEW pyramid (advanceLevel rebuilt it);
+      // stale references here caused crash-on-collection after transitions.
+      this.enemyManager.setPyramid(this.levelSystem.pyramid);
+      this.powerupManager.setPyramid(this.levelSystem.pyramid);
       this.enemyManager.setLevel(this.levelSystem.currentLevel);
       this.enemyManager.resume();
       this.isLevelTransitioning = false;

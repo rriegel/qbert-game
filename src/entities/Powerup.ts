@@ -53,6 +53,7 @@ export class Powerup {
    */
   deactivate(): void {
     this.isActive = false;
+    this.scene.tweens.killTweensOf(this.graphics);
     this.graphics.destroy();
   }
   
@@ -64,10 +65,13 @@ export class Powerup {
   }
   
   /**
-   * Destroy the powerup
+   * Destroy the powerup. Kills any in-flight tweens first so a collection
+   * animation interrupted by a level transition cannot fire its onComplete
+   * callback against a torn-down pyramid.
    */
   destroy(): void {
     this.isActive = false;
+    this.scene.tweens.killTweensOf(this.graphics);
     this.graphics.destroy();
   }
 }

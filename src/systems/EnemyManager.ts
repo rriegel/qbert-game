@@ -61,6 +61,15 @@ export class EnemyManager {
   }
 
   /**
+   * Re-sync the pyramid reference after a level transition.
+   * LevelSystem.advanceLevel() destroys the old pyramid; enemies (e.g. Slick
+   * reverting cube colors) would otherwise touch the destroyed instance.
+   */
+  setPyramid(pyramid: Pyramid): void {
+    this.pyramid = pyramid;
+  }
+
+  /**
    * Update level to adjust spawn rates
    */
   setLevel(level: number): void {
