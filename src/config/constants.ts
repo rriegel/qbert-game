@@ -31,6 +31,14 @@ export const COLORS = {
 export const PLAYER_HOP_DURATION = 300;
 export const PLAYER_START_LIVES = 3;
 
+// Discs (classic floating platforms beside the pyramid)
+export const DISC_RIDE_DURATION = 1200; // ms to ride from edge cube to top
+export const DISC_STAND_OFFSET = 15;    // px player sits above disc center
+export const DISC_SPAWN = {
+  leftRow: 3,   // left disc boardable from (3,0) via up-left hop
+  rightRow: 4   // right disc boardable from (4,4) via up-right hop
+};
+
 // Scoring
 export const SCORE_CUBE_COLOR = 25;
 export const SCORE_LEVEL_BONUS = 250;

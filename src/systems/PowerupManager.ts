@@ -7,6 +7,8 @@ import { Player } from '../entities/Player';
 import { Pyramid } from '../entities/Pyramid';
 import { EnemyManager } from './EnemyManager';
 import { ScoreSystem } from './ScoreSystem';
+import { DISC_SPAWN, DISC_RIDE_DURATION, DISC_STAND_OFFSET } from '../config/constants';
+import { gridToScreen } from '../utils/Isometric';
 
 export class PowerupManager {
   private scene: Phaser.Scene;
@@ -52,11 +54,12 @@ export class PowerupManager {
    * Update powerups and spawn logic
    */
   update(player: Player): void {
-    // Update spawn timer
+    // Update spawn timer (Shield / SlowMo / Paintbrush only — discs spawn
+    // at level start and persist)
     this.spawnTimer += this.scene.game.loop.delta;
     if (this.spawnTimer >= this.spawnInterval) {
       this.spawnTimer = 0;
-      this.trySpawnDisk();
+      this.trySpawnPowerup();
     }
     
     // Update existing powerups
@@ -67,18 +70,25 @@ export class PowerupManager {
     // Remove inactive powerups
     this.powerups = this.powerups.filter(p => p.isActive);
     
-    // Check if player landed on a disk
+    // Check if player landed on a powerup
     this.checkPlayerCollision(player);
   }
   
   /**
-   * Try to spawn a disk on a pyramid edge
+   * Spawn the classic pair of discs beside the pyramid. Called at level
+   * start; discs persist until ridden or cleared at level end.
    */
-  private trySpawnDisk(): void {
-    // Don't spawn if there's already a Disk on the board
-    const hasDisk = this.powerups.some(p => p instanceof Disk);
-    if (hasDisk) return;
-    
+  spawnLevelDiscs(): void {
+    const left = new Disk(this.scene, DISC_SPAWN.leftRow, 0, 'left');
+    const right = new Disk(this.scene, DISC_SPAWN.rightRow, DISC_SPAWN.rightRow, 'right');
+    this.powerups.push(left, right);
+  }
+  
+  /**
+   * Try to spawn a random powerup (Shield / SlowMo / Paintbrush) on a
+   * pyramid edge cube.
+   */
+  private trySpawnPowerup(): void {
     // Pick a random edge position (left or right side)
     const side = Math.random() < 0.5 ? 'left' : 'right';
     const row = Math.floor(Math.random() * 5) + 1; // rows 1-5
@@ -90,15 +100,12 @@ export class PowerupManager {
       col = row; // rightmost column
     }
     
-    // Randomly choose between Disk, Shield, SlowMo, and Paintbrush
+    // Randomly choose between Shield, SlowMo, and Paintbrush
     const powerupType = Math.random();
-    if (powerupType < 0.4) {
-      const disk = new Disk(this.scene, row, col, side as 'left' | 'right');
-      this.powerups.push(disk);
-    } else if (powerupType < 0.7) {
+    if (powerupType < 0.67) {
       const shield = new Shield(this.scene, row, col);
       this.powerups.push(shield);
-    } else if (powerupType < 0.9) {
+    } else if (powerupType < 0.83) {
       const slowmo = new SlowMo(this.scene, row, col);
       this.powerups.push(slowmo);
     } else {
@@ -146,23 +153,53 @@ export class PowerupManager {
   }
   
   /**
-   * Collect a disk and teleport player
+   * Player has landed on a disk: kill any chasing Coily (classic +500
+   * reward) and start the ride to the top. Input stays locked until the
+   * ride completes.
    */
-  public collectDisk(disk: Disk, player: Player): void {
-    // Animate disk collection
-    disk.animateCollection(() => {
-      // Teleport player to top
-      player.row = 0;
-      player.col = 0;
-      player.updatePosition();
-      
-      // Make Coily fall off if chasing
-      if (this.enemyManager) {
-        const defeatedCount = this.enemyManager.makeCoilyFallOff();
-        // Award 500 points per Coily defeated
-        if (defeatedCount > 0 && this.scoreSystem) {
-          this.scoreSystem.addEnemyDefeatScore(defeatedCount);
-        }
+  public collectDisk(disk: Disk, player: Player, onRideComplete?: () => void): void {
+    // Coily chases the player off the edge the moment the ride begins
+    if (this.enemyManager) {
+      const defeatedCount = this.enemyManager.makeCoilyFallOff();
+      if (defeatedCount > 0 && this.scoreSystem) {
+        this.scoreSystem.addEnemyDefeatScore(defeatedCount);
+      }
+    }
+
+    // Detach player from the grid during the ride so collisions can't
+    // trigger mid-air (row -1 matches nothing).
+    player.row = -1;
+    player.col = -1;
+
+    // Ride: disc and player glide together from the disc's position to the
+    // top cube (0,0). Player stands slightly above the disc's top face.
+    const startX = disk.screenX;
+    const startY = disk.screenY;
+    const topPos = gridToScreen(0, 0);
+    const dx = topPos.x - startX;
+    const dy = topPos.y - startY;
+
+    this.scene.tweens.addCounter({
+      from: 0,
+      to: 1,
+      duration: DISC_RIDE_DURATION,
+      ease: 'Sine.easeInOut',
+      onUpdate: (tween) => {
+        const t = tween.getValue() ?? 0;
+        const x = startX + dx * t;
+        // Slight upward arc over the pyramid corner
+        const arcOffset = -60 * t * (1 - t);
+        const y = startY + dy * t + arcOffset;
+        disk.setRidePosition(x, y);
+        player.graphics.setDepth(1000);
+        player.graphics.setPosition(x, y - DISC_STAND_OFFSET);
+      },
+      onComplete: () => {
+        player.row = 0;
+        player.col = 0;
+        player.updatePosition();
+        disk.consume();
+        onRideComplete?.();
       }
     });
   }

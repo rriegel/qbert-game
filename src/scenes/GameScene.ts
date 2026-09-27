@@ -48,6 +48,8 @@ export class GameScene extends Phaser.Scene {
     this.powerupManager.setEnemyManager(this.enemyManager);
     this.powerupManager.setScoreSystem(this.scoreSystem);
     this.player.powerupManager = this.powerupManager;
+    // Classic discs spawn at level start and persist until ridden
+    this.powerupManager.spawnLevelDiscs();
     
     // UI
     this.add.text(10, 70, 'Q*bert - Phase 4: Enemies', {
@@ -208,6 +210,8 @@ export class GameScene extends Phaser.Scene {
       this.enemyManager.setLevel(this.levelSystem.currentLevel);
       this.enemyManager.resume();
       this.isLevelTransitioning = false;
+      // Fresh discs for the new level
+      this.powerupManager.spawnLevelDiscs();
       
       // Update level display
       this.levelText.setText(`Level: ${this.levelSystem.currentLevel}`);

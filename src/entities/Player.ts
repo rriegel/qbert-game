@@ -247,10 +247,12 @@ export class Player {
         this.graphics.setPosition(x, y);
       },
       onComplete: () => {
-        // Collect the disk and teleport to top
-        this.powerupManager.collectDisk(disk, this);
-        this.isHopping = false;
-        onComplete?.();
+        // Landed on the disc — stand on it, then ride to the top.
+        // isHopping stays true (input locked) until the ride completes.
+        this.powerupManager.collectDisk(disk, this, () => {
+          this.isHopping = false;
+          onComplete?.();
+        });
       }
     });
   }
