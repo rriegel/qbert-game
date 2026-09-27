@@ -25,11 +25,11 @@ export class Disk extends Powerup {
     // the disc look like it sat ON the pyramid).
     const edgePos = gridToScreen(row, col);
     if (side === 'left') {
-      this.screenX = edgePos.x - CUBE_WIDTH * 1.1;
-      this.screenY = edgePos.y - CUBE_HEIGHT * 0.4;
+      this.screenX = edgePos.x - CUBE_WIDTH * 0.5;
+      this.screenY = edgePos.y - CUBE_HEIGHT * 0.7;
     } else {
-      this.screenX = edgePos.x + CUBE_WIDTH * 1.1;
-      this.screenY = edgePos.y - CUBE_HEIGHT * 0.4;
+      this.screenX = edgePos.x + CUBE_WIDTH * 0.5;
+      this.screenY = edgePos.y - CUBE_HEIGHT * 0.7;
     }
     this.graphics.setPosition(this.screenX, this.screenY);
   }
@@ -47,15 +47,15 @@ export class Disk extends Powerup {
 
     // Base/rim (thickness below the top face → reads as a 3D platform)
     this.graphics.fillStyle(darker, 0.9);
-    this.graphics.fillEllipse(0, -4, 56, 18);
+    this.graphics.fillEllipse(0, -9, 42, 8);
 
     // Top face
     this.graphics.fillStyle(color, 0.95);
-    this.graphics.fillEllipse(0, -10, 56, 18);
+    this.graphics.fillEllipse(0, -12, 42, 8);
 
     // Highlight sweep
     this.graphics.fillStyle(0xFFFFFF, 0.25);
-    this.graphics.fillEllipse(-8, -14, 24, 8);
+    this.graphics.fillEllipse(-10, -12, 18, 6);
   }
 
   /**
