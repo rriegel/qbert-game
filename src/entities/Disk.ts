@@ -103,21 +103,15 @@ export class Disk extends Powerup {
 
   /**
    * Check if a player hopping off this edge in this direction should land
-   * on this disc. Only outward hops (off the pyramid) count — hop() only
-   * consults discs when the target grid position is invalid.
+   * on this disc. Only the genuinely outward hop counts — the other two
+   * directions land on valid cubes inside the pyramid and must NOT catch.
+   * Left edge (col=0): outward = up-left. Right edge (col=row): outward =
+   * up-right (down-right lands on (row+1, col+1), a valid cube).
    */
   isTargetForHop(fromRow: number, fromCol: number, direction: 'up-left' | 'up-right' | 'down-left' | 'down-right'): boolean {
     if (this.side === 'left') {
-      // Player on left edge (col=0); the only outward hop is up-left
-      if (fromCol === 0 && fromRow === this.row) {
-        return direction === 'up-left';
-      }
-    } else {
-      // Player on right edge (col=row); outward hops are up-right/down-right
-      if (fromCol === fromRow && fromRow === this.row) {
-        return direction === 'up-right' || direction === 'down-right';
-      }
+      return fromCol === 0 && fromRow === this.row && direction === 'up-left';
     }
-    return false;
+    return fromCol === fromRow && fromRow === this.row && direction === 'up-right';
   }
 }

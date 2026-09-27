@@ -133,14 +133,17 @@ export class PowerupManager {
   }
   
   /**
-   * Check if player landed on a disk
+   * Check if player landed on a powerup.
+   * Discs are deliberately excluded: they are airborne platforms caught
+   * only by hopping off the pyramid edge (Player.hop → checkDiskLanding).
+   * Matching them here would collect the disc just by landing on its
+   * anchor cube, which is wrong.
    */
   private checkPlayerCollision(player: Player): void {
     for (const powerup of this.powerups) {
+      if (powerup instanceof Disk) continue;
       if (powerup.isAtPosition(player.row, player.col)) {
-        if (powerup instanceof Disk) {
-          this.collectDisk(powerup, player);
-        } else if (powerup instanceof Shield) {
+        if (powerup instanceof Shield) {
           this.collectShield(powerup, player);
         } else if (powerup instanceof SlowMo) {
           this.collectSlowMo(powerup);
