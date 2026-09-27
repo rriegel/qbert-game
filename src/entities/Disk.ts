@@ -20,14 +20,16 @@ export class Disk extends Powerup {
     this.side = side;
     this.lifetime = Infinity; // persists until used or cleared at level end
 
-    // Position OUTSIDE the pyramid edge
+    // Position OUTSIDE the pyramid silhouette. 1.1 cube-widths clears the
+    // cube faces of the rows below the edge cube (0.7 overlapped them, making
+    // the disc look like it sat ON the pyramid).
     const edgePos = gridToScreen(row, col);
     if (side === 'left') {
-      this.screenX = edgePos.x - CUBE_WIDTH * 0.7;
-      this.screenY = edgePos.y - CUBE_HEIGHT * 0.2;
+      this.screenX = edgePos.x - CUBE_WIDTH * 1.1;
+      this.screenY = edgePos.y - CUBE_HEIGHT * 0.4;
     } else {
-      this.screenX = edgePos.x + CUBE_WIDTH * 0.7;
-      this.screenY = edgePos.y - CUBE_HEIGHT * 0.2;
+      this.screenX = edgePos.x + CUBE_WIDTH * 1.1;
+      this.screenY = edgePos.y - CUBE_HEIGHT * 0.4;
     }
     this.graphics.setPosition(this.screenX, this.screenY);
   }
